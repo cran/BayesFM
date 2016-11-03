@@ -1,0 +1,23 @@
+Package: BayesFM
+Title: Bayesian Inference for Factor Modeling
+Type: Package
+Version: 0.0.2
+Authors@R: person("Rémi", "Piatek", email = "remi.piatek@econ.ku.dk",
+                  role = c("aut", "cre"))
+Author: Rémi Piatek [aut, cre]
+Maintainer: Rémi Piatek <remi.piatek@econ.ku.dk>
+Description: Collection of procedures to perform Bayesian analysis on a variety
+    of factor models. Currently, it includes: Bayesian Exploratory Factor
+    Analysis (befa), an approach to dedicated factor analysis with stochastic
+    search on the structure of the factor loading matrix. The number of latent
+    factors, as well as the allocation of the manifest variables to the factors,
+    are not fixed a priori but determined during MCMC sampling.
+    More approaches will be included in future releases of this package.
+Depends: R (>= 3.0.0), checkmate (>= 1.8.0), plyr (>= 1.8.0)
+License: GPL-3
+NeedsCompilation: yes
+Encoding: UTF-8
+RoxygenNote: 5.0.1
+Packaged: 2016-11-03 15:16:27 UTC; remek
+Repository: CRAN
+Date/Publication: 2016-11-03 19:59:41
