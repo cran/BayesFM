@@ -81,8 +81,7 @@
 #' @return The function returns a data frame with \code{N} observations
 #' simulated from the corresponding dedicated factor model.
 #' The parameters used to generate the data are saved as attributes:
-#' \code{dedic}, \code{alpha}, \code{sigma} and \code{R} (lower triangular
-#' elements in column order, including diagonal elements).
+#' \code{dedic}, \code{alpha}, \code{sigma} and \code{R}.
 #'
 #' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
 #'
@@ -180,17 +179,14 @@ simul.dedic.facmod <- function(N, dedic, alpha, sigma, R, R.corr = TRUE,
   names(dedic) <- paste0("Y", 1:nmeas)
   names(alpha) <- paste0("alpha:", 1:nmeas)
   names(sigma) <- paste0("sigma:", 1:nmeas)
-  ind <- matrix(1:nfac, nfac, nfac)
-  li <- lower.tri(ind, diag = TRUE)
-  R.out <- R[li]
-  names(R.out) <- paste("R", t(ind)[li], ind[li], sep = ":")
+  rownames(R)  <- colnames(R) <- paste0("R:", 1:nfac)
 
   # return simulated data
   output <- as.data.frame(Y)
   attr(output, "dedic") <- dedic
   attr(output, "alpha") <- alpha
   attr(output, "sigma") <- sigma
-  attr(output, "R") <- R.out
+  attr(output, "R")     <- R
   return(output)
 
 }

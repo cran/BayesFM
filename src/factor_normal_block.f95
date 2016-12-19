@@ -39,7 +39,7 @@ contains
     call this%factor_normal%init(nobs, nmeas, nfac, start)
 
     allocate(this%indi(nfac))
-    allocate(this%mi(nmeas))    
+    allocate(this%mi(nmeas))
     this%indi = (/(i, i=1, this%nfac)/)
     this%mi = (/(i, i=1, this%nmeas)/)
 

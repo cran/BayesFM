@@ -1,0 +1,13 @@
+Changes in version 0.1.0
+  - Fixed dependencies in Fortran code (Makevars file) and added gfortran as
+    system requirement in DESCRIPTION file to solve cross-compilation problems.
+  - Added print(), summary() and plot() functions to "befa" object.
+  - Removed HPPmodel(), as highest posterior probability models can now be
+    summarized with generic function summary().
+  - Renamed two arguments passed to befa() function for consistency
+    (loading.start -> alpha.start, idiovar.start -> sigma.start).
+  - Removed deprecated cleanup file.
+  - Added NEWS file.
+
+Changes in version 0.0.2
+  - First version released on CRAN.

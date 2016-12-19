@@ -106,9 +106,9 @@ contains
     real(r8), intent(in)     :: Y2, fac2(this%nfac), Yfac2(this%nfac)
     real(r8)                 :: Pm(this%nfac), Qm(this%nfac), Rm(this%nfac)
     real(r8)                 :: CNn, lmlik(0:this%nfac, 0:this%nfac)
-    
+
     select type (this)
-    
+
       type is (ratio_marglik_cat)
 
         Pm = 1._r8 + fac2/this%alpha_prec0
@@ -116,7 +116,7 @@ contains
         Rm = -.5_r8*log(Pm) + Qm
 
         lmlik(0, 1:) = Rm
-                     
+
       type is (ratio_marglik_cont)
 
         Pm = 1._r8 + fac2/this%alpha_prec0
@@ -133,7 +133,7 @@ contains
     lmlik(1:, 0) = -lmlik(0, 1:)
     lmlik(1:,1:) = spread(Rm, dim=1, ncopies=this%nfac) &
                  - spread(Rm, dim=2, ncopies=this%nfac)
-                     
+
   end function get_ratio_marglik
 
 

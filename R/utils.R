@@ -3,6 +3,7 @@
 
 is.formula <- function(x) return(class(x) == "formula")
 
+
 ### check if matrix is positive semidefinite
 
 is.pos.semidefinite.matrix <- function(x) {
@@ -13,11 +14,13 @@ is.pos.semidefinite.matrix <- function(x) {
   return(all(eigen(x, only.values = TRUE)$values >= 0))
 }
 
+
 ### check if matrix can be inverted
 
 is.invertible.matrix <- function(x) {
   return(class(try(solve(x), silent = TRUE)) == "matrix")
 }
+
 
 ### relabel indicators for dedicated factor model
 ### example:
@@ -30,4 +33,23 @@ relabel.dedic <- function(d) {
   t[u] <- 1:length(u)
   d[d != 0] <- t[d]
   return(d)
+}
+
+
+### count number of unique nonzero elements in x
+
+count.unique.nonzero <- function(x) return(length(unique(x[x != 0])))
+
+
+### convert matrix to list
+
+mat2list <- function(x, byrow = FALSE) {
+  if (byrow) {
+    y <- split(x, c(row(x)))
+    names(y) <- rownames(x)
+  } else {
+    y <- split(x, c(col(x)))
+    names(y) <- colnames(x)
+  }
+  return(y)
 }

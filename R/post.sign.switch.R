@@ -52,9 +52,6 @@
 #' loading matrix and of the correlation matrix of the latent factors to restore
 #' identification \emph{a posteriori}.
 #'
-#' @seealso \code{\link{HPPmodel}} to find the highest posterior probability
-#' model.
-#'
 #' @examples
 #' set.seed(6)
 #' Y <- simul.dedic.facmod(N = 200, dedic = rep(1:3, each = 5))
@@ -85,12 +82,10 @@ post.sign.switch <- function(mcmc, benchmark = NULL, benchmark.threshold = 0.5)
   }
   assertNumber(benchmark.threshold, lower = 0, upper = 1)
 
-  Kmax <- attr(mcmc, "Kmax")
-  nmeas <- ncol(mcmc$dedic)
-  iter <- nrow(mcmc$draws)
-  npar <- ncol(mcmc$draws)
+  Kmax   <- attr(mcmc, "Kmax")
+  nmeas  <- ncol(mcmc$dedic)
+  iter   <- nrow(mcmc$dedic)
   R.npar <- Kmax * (Kmax - 1)/2
-  R.ind <- (npar - R.npar + 1):npar
 
   # factor loadings used as benchmarks
   if (is.null(benchmark)) {
@@ -117,21 +112,20 @@ post.sign.switch <- function(mcmc, benchmark = NULL, benchmark.threshold = 0.5)
   for (i in 1:iter) {
     # switch signs of factor loadings
     dedic <- mcmc$dedic[i, ]
-    switch <- sign(mcmc$draws[i, benchmark])
+    switch <- sign(mcmc$alpha[i, benchmark])
     switch[is.na(switch)] <- 1  # no sign switch for factors with no benchmark
     switch.meas <- rep(0, nmeas)
     for (j in 1:nmeas) {
-      if (dedic[j] == 0)
-        next
+      if (dedic[j] == 0) next
       switch.meas[j] <- switch[dedic[j]]
     }
-    mcmc$draws[i, 1:nmeas] <- mcmc$draws[i, 1:nmeas] * switch.meas
+    mcmc$alpha[i, ] <- mcmc$alpha[i, ] * switch.meas
 
     # switch signs of rows and columns of correlation matrix
-    R <- c(mcmc$draws[i, R.ind], 1)
+    R <- c(mcmc$R[i, ], 1)
     R <- matrix(R[R.mat], nrow = Kmax)
     R <- diag(switch) %*% R %*% diag(switch)
-    mcmc$draws[i, R.ind] <- R[lower.tri(R)]
+    mcmc$R[i, ] <- R[lower.tri(R)]
   }
 
   attr(mcmc, "post.sign.switch") <- TRUE

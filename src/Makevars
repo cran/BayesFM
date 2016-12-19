@@ -1,21 +1,30 @@
-#PKG_FCFLAGS = -O0 -g -Wall -Wextra -pedantic
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-OBJECTS = global.o probability.o matrix.o befa.o measurement.o loading_idioprec.o covariates.o indicators_dedic.o factor_normal.o factor_normal_block.o covmat_block_invwishart.o mda.o mcmc_progress.o
+OBJECTS = befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o global.o indicators_dedic.o loading_idioprec.o matrix.o mcmc_progress.o mda.o measurement.o probability.o
 
 all: $(SHLIB)
 
-befa.o covariates.o covmat_block_invwishart.o factor_normal.o factor_normal_block.o indicators_dedic.o loading_idioprec.o mda.o measurement.o: probability.o
+befa.o : covariates.o
 
-covariates.o covmat_block_invwishart.o factor_normal.o factor_normal_block.o probability.o: matrix.o
+befa.o factor_normal_block.o factor_normal.o mda.o : covmat_block_invwishart.o
 
-befa.o: global.o measurement.o loading_idioprec.o covariates.o indicators_dedic.o factor_normal_block.o covmat_block_invwishart.o mda.o mcmc_progress.o
+befa.o : factor_normal_block.o
 
-probability.o matrix.o measurement.o covariates.o loading_idioprec.o indicators_dedic.o covmat_block_invwishart.o factor_normal.o mda.o: global.o
+factor_normal_block.o : factor_normal.o
 
-covmat_block_invwishart.o: indicators_dedic.o
+befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o matrix.o mda.o measurement.o probability.o : global.o
 
-factor_normal.o: covmat_block_invwishart.o
+befa.o covmat_block_invwishart.o factor_normal_block.o : indicators_dedic.o
 
-factor_normal_block.o: factor_normal.o covmat_block_invwishart.o indicators_dedic.o
+befa.o : loading_idioprec.o
+
+covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o probability.o : matrix.o
+
+befa.o : mcmc_progress.o
+
+befa.o : mda.o
+
+befa.o : measurement.o
+
+befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o mda.o measurement.o : probability.o
 

@@ -77,8 +77,5 @@ R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 \code{\link{post.column.switch}} for column switching of the factor
 loading matrix and of the correlation matrix of the latent factors to restore
 identification \emph{a posteriori}.
-
-\code{\link{HPPmodel}} to find the highest posterior probability
-model.
 }
 

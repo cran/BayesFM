@@ -37,8 +37,7 @@ sure \code{max.corr} is not being exceeded).}
 The function returns a data frame with \code{N} observations
 simulated from the corresponding dedicated factor model.
 The parameters used to generate the data are saved as attributes:
-\code{dedic}, \code{alpha}, \code{sigma} and \code{R} (lower triangular
-elements in column order, including diagonal elements).
+\code{dedic}, \code{alpha}, \code{sigma} and \code{R}.
 }
 \description{
 This function simulates data from a dedicated factor model. The parameters

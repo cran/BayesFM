@@ -8,7 +8,7 @@ befa(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax, A0 = 10,
   B0 = 10, c0 = 2, C0 = 1, HW.prior = TRUE, nu0 = Kmax + 1, S0 = 1,
   kappa0 = 2, xi0 = 1, kappa = 1/Kmax, indp.tau0 = TRUE,
   rnd.step = TRUE, n.step = 5, search.delay = min(burnin, 10),
-  R.delay = min(burnin, 100), dedic.start, loading.start, idiovar.start,
+  R.delay = min(burnin, 100), dedic.start, alpha.start, sigma.start,
   beta.start, R.start, verbose = FALSE)
 }
 \arguments{
@@ -122,11 +122,11 @@ to the number of manifest variables. Each element takes a value among
 variables to the maximum number of factors \code{Kmax}, with a minimum
 of \code{Nid} manifest variables loading on each factor.}
 
-\item{loading.start}{Starting values for the factor loadings. Numeric vector of length
+\item{alpha.start}{Starting values for the factor loadings. Numeric vector of length
 equal to the number of manifest variables. If missing, sampled from a
 Normal distribution with zero mean and variance \code{A0}.}
 
-\item{idiovar.start}{Starting values for the idiosyncratic variances. Numeric vector of
+\item{sigma.start}{Starting values for the idiosyncratic variances. Numeric vector of
 length equal to the number of manifest variables. Sampled from prior
 if missing.}
 
@@ -145,12 +145,19 @@ MCMC sampler.}
 \value{
 The function returns an object of class '\code{befa}' containing:
 \itemize{
-  \item \code{draws}: A matrix containing the MCMC draws of the model
-  parameters in its columns, stored in the following order: factor loadings,
-  idiosyncratic variances, regression coefficients (if any), off-diagonal
-  elements of the correlation matrix of the factors.
-  \item \code{dedic}: A matrix containing the MCMC draws of the indicators.
-  \item \code{MHacc}: Acceptance rate of the Metropolis-Hastings algorithm.
+  \item \code{alpha}: Matrix of MCMC draws of the factor loadings.
+  \item \code{sigma}: Matrix of MCMC draws of the idiosyncratic variances.
+  \item \code{R}: Matrix of MCMC draws of the off-diagonal elements of the
+        correlation matrix of the factors.
+  \item \code{beta}: Matrix of MCMC draws of the regression coefficients (if
+        any).
+  \item \code{dedic}: Matrix of MCMC draws of the indicators.
+  \item \code{nfac}: Vector of number of 'active' factors across MCMC
+        iterations (i.e., factors loaded by at least \code{Nid} manifest
+        variables).
+  \item \code{MHacc}: Logical vector indicating accepted proposals of
+        Metropolis-Hastings algorithm.
+  \item \code{call}: Function call.
 }
 The parameters \code{Kmax} and \code{Nid} are saved as object attributes.
 
@@ -308,12 +315,11 @@ mcmc <- befa(Y, Kmax = 5, iter = 1000)
 mcmc <- post.column.switch(mcmc)
 mcmc <- post.sign.switch(mcmc)
 
+summary(mcmc)  # summarize posterior results
+plot(mcmc)     # plot trace and frequency of number of active factors
+
 # summarize highest posterior probability (HPP) model
-hppm <- HPPmodel(mcmc)
-hppm$prob                                # HPP model probability
-hppm$dedic                               # indicators in HPP model
-colMeans(hppm$draws)                     # posterior means in HPP model
-attributes(Y)[c('alpha', 'sigma', 'R')]  # true model parameters
+summary(mcmc, what = 'hppm')
 
 #### model with covariates
 
@@ -332,13 +338,17 @@ model <- c('~ X1',                           # X1 covariate in all equations
            paste0('Y', 11:15, ' ~ X4'))      # X4 covariate for Y11-Y15 only
 model <- lapply(as.list(model), as.formula)  # make list of formulas
 
-# run MCMC sampler
+# run MCMC sampler, post process and summarize
 mcmc <- befa(model, data = data.frame(Y, Xcov), Kmax = 5, iter = 1000)
+mcmc <- post.column.switch(mcmc)
+mcmc <- post.sign.switch(mcmc)
+mcmc.sum <- summary(mcmc)
+mcmc.sum
 
 # compare posterior mean of regression coefficients to true values
-post <- cbind(beta[beta != 0], colMeans(mcmc$draws)[31:75])
-colnames(post) <- c('true', 'mcmc')
-post
+beta.comp <- cbind(beta[beta != 0], mcmc.sum$beta[, 'mean'])
+colnames(beta.comp) <- c('true', 'mcmc')
+print(beta.comp, digits = 3)
 
 }
 \author{
@@ -365,7 +375,6 @@ for column switching and sign switching of the factor loading matrix and of
 the correlation matrix of the latent factors to restore identification
 \emph{a posteriori}.
 
-\code{\link{HPPmodel}} to find the highest posterior probability
-model.
+\code{\link{summary.befa}} to summarize posterior results.
 }
 

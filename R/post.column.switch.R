@@ -51,16 +51,15 @@ post.column.switch <- function(mcmc)
   }
 
   # issue warning if M-H acceptance rate too low
-  if (mcmc$MHacc < 0.2) {
-    warning(paste("M-H acceptance rate of sampler is < 0.20.",
+  if (mean(mcmc$MHacc) < 0.2) {
+    warning(paste("M-H acceptance rate of sampler is low (< 0.20).",
                   "Check convergence and mixing!"))
   }
 
-  Kmax <- attr(mcmc, "Kmax")
-  nmeas <- ncol(mcmc$dedic)
-  iter <- nrow(mcmc$draws)
+  Kmax   <- attr(mcmc, "Kmax")
+  nmeas  <- ncol(mcmc$dedic)
+  iter   <- nrow(mcmc$dedic)
   R.npar <- Kmax * (Kmax - 1)/2
-  R.ind <- (2 * nmeas) + (1:R.npar)
 
   # index matrix used to reconstruct matrix from lower triangular elements
   R.mat <- diag(Kmax) * (R.npar + 1)
@@ -77,10 +76,10 @@ post.column.switch <- function(mcmc)
     # reorder rows and columns of correlation matrix
     u <- unique(d[d != 0])
     r <- c(u, v[!v %in% u])
-    R <- c(mcmc$draws[i, R.ind], 1)
+    R <- c(mcmc$R[i, ], 1)
     R <- matrix(R[R.mat], nrow = Kmax)
     R <- R[r, r]
-    mcmc$draws[i, R.ind] <- R[lower.tri(R)]
+    mcmc$R[i, ] <- R[lower.tri(R)]
   }
 
   attr(mcmc, "post.column.switch") <- TRUE

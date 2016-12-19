@@ -3,7 +3,7 @@ subroutine befa &
      search_delay, Rmat_delay, step_rnd, step_lambda, seed, prior_loadprec, &
      prior_beta, prior_dedic, prior_facdist, start_loadprec, start_beta, &
      start_dedic, start_factor, start_facdist, verbose, npar, MCMCdraws, &
-     MCMCgroup, MHacc)
+     MCMCdedic, MHacc)
 
   use global
   use probability, only : set_seed, rpoisson
@@ -49,7 +49,7 @@ subroutine befa &
   !----- output
   integer,  intent(in)  :: npar
   real(r8), intent(out) :: MCMCdraws(burnin+1:iter,npar)
-  integer,  intent(out) :: MCMCgroup(burnin+1:iter,nmeas)
+  integer,  intent(out) :: MCMCdedic(burnin+1:iter,nmeas)
   logical,  intent(out) :: MHacc(burnin+1:iter)
 
   !----- model ingredients
@@ -154,11 +154,11 @@ subroutine befa &
 
     ! save current draws after burn-in
     if(i > burnin) then
-      MCMCgroup(i,:) = dedic%group
+      MCMCdedic(i,:) = dedic%group
       MCMCdraws(i,:) = [ alpha_prec%alpha, &
                          alpha_prec%var, &
-                         get_all_covariates(Xcov), &
-                         facdist%get() ]
+                         facdist%get(), &
+                         get_all_covariates(Xcov) ]
     end if
 
     ! show MCMC progress

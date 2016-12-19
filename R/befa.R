@@ -115,7 +115,7 @@
 #' @param R.delay
 #'        Number of MCMC iterations run with fixed correlation matrix (specified
 #'        in \code{dedic.start}) at beginning of MCMC sampling.
-#' @param loading.start
+#' @param alpha.start
 #'        Starting values for the factor loadings. Numeric vector of length
 #'        equal to the number of manifest variables. If missing, sampled from a
 #'        Normal distribution with zero mean and variance \code{A0}.
@@ -125,7 +125,7 @@
 #'        0, 1, ..., \code{Kmax}. If missing, random allocation of the manifest
 #'        variables to the maximum number of factors \code{Kmax}, with a minimum
 #'        of \code{Nid} manifest variables loading on each factor.
-#' @param idiovar.start
+#' @param sigma.start
 #'        Starting values for the idiosyncratic variances. Numeric vector of
 #'        length equal to the number of manifest variables. Sampled from prior
 #'        if missing.
@@ -262,12 +262,19 @@
 #'
 #' @return The function returns an object of class '\code{befa}' containing:
 #' \itemize{
-#'   \item \code{draws}: A matrix containing the MCMC draws of the model
-#'   parameters in its columns, stored in the following order: factor loadings,
-#'   idiosyncratic variances, regression coefficients (if any), off-diagonal
-#'   elements of the correlation matrix of the factors.
-#'   \item \code{dedic}: A matrix containing the MCMC draws of the indicators.
-#'   \item \code{MHacc}: Acceptance rate of the Metropolis-Hastings algorithm.
+#'   \item \code{alpha}: Matrix of MCMC draws of the factor loadings.
+#'   \item \code{sigma}: Matrix of MCMC draws of the idiosyncratic variances.
+#'   \item \code{R}: Matrix of MCMC draws of the off-diagonal elements of the
+#'         correlation matrix of the factors.
+#'   \item \code{beta}: Matrix of MCMC draws of the regression coefficients (if
+#'         any).
+#'   \item \code{dedic}: Matrix of MCMC draws of the indicators.
+#'   \item \code{nfac}: Vector of number of 'active' factors across MCMC
+#'         iterations (i.e., factors loaded by at least \code{Nid} manifest
+#'         variables).
+#'   \item \code{MHacc}: Logical vector indicating accepted proposals of
+#'         Metropolis-Hastings algorithm.
+#'   \item \code{call}: Function call.
 #' }
 #' The parameters \code{Kmax} and \code{Nid} are saved as object attributes.
 #'
@@ -298,8 +305,7 @@
 #' the correlation matrix of the latent factors to restore identification
 #' \emph{a posteriori}.
 #'
-#' @seealso \code{\link{HPPmodel}} to find the highest posterior probability
-#' model.
+#' @seealso \code{\link{summary.befa}} to summarize posterior results.
 #'
 #' @examples
 #' #### model without covariates
@@ -319,12 +325,11 @@
 #' mcmc <- post.column.switch(mcmc)
 #' mcmc <- post.sign.switch(mcmc)
 #'
+#' summary(mcmc)  # summarize posterior results
+#' plot(mcmc)     # plot trace and frequency of number of active factors
+#'
 #' # summarize highest posterior probability (HPP) model
-#' hppm <- HPPmodel(mcmc)
-#' hppm$prob                                # HPP model probability
-#' hppm$dedic                               # indicators in HPP model
-#' colMeans(hppm$draws)                     # posterior means in HPP model
-#' attributes(Y)[c('alpha', 'sigma', 'R')]  # true model parameters
+#' summary(mcmc, what = 'hppm')
 #'
 #' #### model with covariates
 #'
@@ -343,13 +348,17 @@
 #'            paste0('Y', 11:15, ' ~ X4'))      # X4 covariate for Y11-Y15 only
 #' model <- lapply(as.list(model), as.formula)  # make list of formulas
 #'
-#' # run MCMC sampler
+#' # run MCMC sampler, post process and summarize
 #' mcmc <- befa(model, data = data.frame(Y, Xcov), Kmax = 5, iter = 1000)
+#' mcmc <- post.column.switch(mcmc)
+#' mcmc <- post.sign.switch(mcmc)
+#' mcmc.sum <- summary(mcmc)
+#' mcmc.sum
 #'
 #' # compare posterior mean of regression coefficients to true values
-#' post <- cbind(beta[beta != 0], colMeans(mcmc$draws)[31:75])
-#' colnames(post) <- c('true', 'mcmc')
-#' post
+#' beta.comp <- cbind(beta[beta != 0], mcmc.sum$beta[, 'mean'])
+#' colnames(beta.comp) <- c('true', 'mcmc')
+#' print(beta.comp, digits = 3)
 #'
 #' @export befa
 #' @import checkmate
@@ -362,7 +371,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
                  nu0 = Kmax + 1, S0 = 1, kappa0 = 2, xi0 = 1, kappa = 1/Kmax,
                  indp.tau0 = TRUE, rnd.step = TRUE, n.step = 5,
                  search.delay = min(burnin, 10), R.delay = min(burnin, 100),
-                 dedic.start, loading.start, idiovar.start, beta.start, R.start,
+                 dedic.start, alpha.start, sigma.start, beta.start, R.start,
                  verbose = FALSE)
 {
 
@@ -502,19 +511,19 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   ## starting values
 
   ### idiosyncratic variances
-  if (missing(idiovar.start)) {
-    idiovar.start <- 1/rgamma(nmeas, shape = c0, rate = C0)
+  if (missing(sigma.start)) {
+    sigma.start <- 1/rgamma(nmeas, shape = c0, rate = C0)
   } else {
-    assertNumeric(idiovar.start, len = nmeas, lower = tiny, any.missing = FALSE,
+    assertNumeric(sigma.start, len = nmeas, lower = tiny, any.missing = FALSE,
       add = checkArgs)
   }
-  idiovar.start[Ycat > 0] <- 1  # fix variance to 1 for binary variables
+  sigma.start[Ycat > 0] <- 1  # fix variance to 1 for binary variables
 
   ### factor loadings
-  if (missing(loading.start)) {
-    loading.start <- rnorm(nmeas, mean = 0, sd = sqrt(A0))
+  if (missing(alpha.start)) {
+    alpha.start <- rnorm(nmeas, mean = 0, sd = sqrt(A0))
   } else {
-    assertNumeric(loading.start, len = nmeas, any.missing = FALSE,
+    assertNumeric(alpha.start, len = nmeas, any.missing = FALSE,
                   add = checkArgs)
   }
 
@@ -597,13 +606,14 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   ## MCMC sampling
 
   # total number of model parameters
-  npar <- 2 * nmeas + nbeta + Kmax * (Kmax - 1)/2
+  npar <- c(nmeas, nmeas, Kmax*(Kmax - 1)/2, nbeta)
+  npar.all <- sum(npar)
 
   # seed for RNG in Fortran subroutine
   seed <- round(runif(1) * 10^9)
 
   # call Fortran subroutine
-  if (verbose) cat("Starting MCMC sampling...\n")
+  if (verbose) cat("starting MCMC sampling...\n")
   mcmc <- .Fortran("befa",
                    as.integer(nmeas),
                    as.integer(nobs),
@@ -626,55 +636,72 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
                    as.double(prior.beta),
                    as.double(prior.dedic),
                    as.double(prior.facdist),
-                   as.double(cbind(loading.start, idiovar.start)),
+                   as.double(cbind(alpha.start, sigma.start)),
                    as.double(beta.start.1),
                    as.integer(dedic.start),
                    as.double(start.factor),
                    as.double(R.start),
                    as.logical(verbose),
-                   as.integer(npar),
-                   MCMCdraws = double(iter * npar),
-                   MCMCgroup = integer(iter * nmeas),
+                   as.integer(npar.all),
+                   MCMCdraws = double(iter * npar.all),
+                   MCMCdedic = integer(iter * nmeas),
                    MHacc = logical(iter),
                    PACKAGE = "BayesFM")
   if (verbose) cat("done with sampling!\n")
 
 
   ##############################################################################
-  ## label MCMC draws and return
+  ## label MCMC draws and return output
 
-  draws <- matrix(mcmc$MCMCdraws, nrow = iter, ncol = npar)
+  # extract MCMC draws
+  par.mcmc <- split(mcmc$MCMCdraws, rep(1:4, times = iter * npar))
+  par.mcmc <- lapply(par.mcmc, matrix, nrow = iter)
 
-  alpha.lab <- paste0("alpha:", 1:nmeas)
-  var.lab <- paste0("sigma:", 1:nmeas)
-  beta.lab <- c()
+  # label parameters
+  names(par.mcmc)[1:3] <- c("alpha", "sigma", "R")
+  colnames(par.mcmc$R) <- paste("R", rep(1:(Kmax-1), times = (Kmax-1):1),
+                                 unlist(mapply(seq, 2:Kmax, Kmax)), sep = ":")
+  colnames(par.mcmc$alpha) <- paste0("alpha:", Ylab)
+  colnames(par.mcmc$sigma) <- paste0("sigma:", Ylab)
+
+  iter.lab <- seq(burnin + 1, burnin + iter)
+  rownames(par.mcmc$alpha) <- iter.lab
+  rownames(par.mcmc$sigma) <- iter.lab
+  rownames(par.mcmc$R)     <- iter.lab
+
   if (nbeta > 0) {
+    names(par.mcmc)[4] <- "beta"
+    beta.lab <- c()
     for (i in 1:nmeas) {
-      if (!any(YXloc[i, ]))
-        next
+      if (!any(YXloc[i, ])) next
       beta.lab <- c(beta.lab, paste(Ylab[i], Xlab[YXloc[i, ]], sep = ":"))
     }
+    colnames(par.mcmc$beta) <- beta.lab
+    rownames(par.mcmc$beta) <- iter.lab
   }
-  ind <- matrix(1:Kmax, Kmax, Kmax)
-  li <- lower.tri(ind)
-  R.lab <- paste("R", t(ind)[li], ind[li], sep = ":")
-
-  rownames(draws) <- seq(burnin + 1, burnin + iter)
-  colnames(draws) <- c(alpha.lab, var.lab, beta.lab, R.lab)
 
   # indicators
-  dedic <- as.integer(mcmc$MCMCgroup)
-  dedic <- matrix(dedic, nrow = iter, ncol = nmeas)
-  colnames(dedic) <- Ylab
-  rownames(dedic) <- seq(burnin + 1, burnin + iter)
+  dedic.mcmc <- as.integer(mcmc$MCMCdedic)
+  dedic.mcmc <- matrix(dedic.mcmc, nrow = iter, ncol = nmeas)
+  colnames(dedic.mcmc) <- paste0("dedic:", Ylab)
+  rownames(dedic.mcmc) <- iter.lab
+
+  # number of active latent factors across MCMC iterations
+  nfac.mcmc <- apply(dedic.mcmc, 1, count.unique.nonzero)
 
   # prepare and return output
-  output <- list(draws = draws, dedic = dedic, MHacc = mean(mcmc$MHacc))
-  attr(output, "title") <- "BEFA posterior sample"
-  attr(output, "Kmax") <- Kmax
-  attr(output, "Nid") <- Nid
+  output       <- par.mcmc
+  output$dedic <- dedic.mcmc
+  output$nfac  <- nfac.mcmc
+  output$MHacc <- mcmc$MHacc
+  output$call  <- match.call()
+  attr(output, "title")  <- "BEFA posterior sample"
+  attr(output, "Kmax")   <- Kmax
+  attr(output, "Nid")    <- Nid
+  attr(output, "iter")   <- iter
+  attr(output, "burnin") <- burnin
   attr(output, "post.column.switch") <- FALSE
-  attr(output, "post.sign.switch") <- FALSE
+  attr(output, "post.sign.switch")   <- FALSE
   class(output) <- "befa"
   return(output)
 
