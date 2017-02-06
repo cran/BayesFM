@@ -1,3 +1,14 @@
+Changes in version 0.1.1
+  - Added simul.R.prior() and simul.nfac.prior() functions to simulate the prior
+    distributions of the number of latent factors, and of the correlation matrix
+    of the factors.
+  - Improved plot() generic function for "befa" object to show more posterior
+    results, such as heatmaps for indicator posterior probabilities, factor
+    loadings and correlation matrix of the latent factors.
+  - Now using ggplot2 package for nice-looking graphs.
+  - Added "configure" script to address cross-compilation problems.
+  - Minor improvements to documentation.
+
 Changes in version 0.1.0
   - Fixed dependencies in Fortran code (Makevars file) and added gfortran as
     system requirement in DESCRIPTION file to solve cross-compilation problems.

@@ -35,6 +35,7 @@ print.summary.befa <- function(x, ...)
     cat('\n')
     print(x$hppm$dedic, print.gap = 3)
     cat('\n')
+
   } else {
 
     cat('Posterior frequency of number of latent factors:\n')

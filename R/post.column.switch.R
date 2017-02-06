@@ -15,22 +15,24 @@
 #' of the matrix). At each MCMC iteration, the nonzero columns of \eqn{\alpha}
 #' are reordered such that the top elements appear in increasing order.
 #' The rows and columns of the correlation matrix \eqn{R} of the factors are
-#' switched accordingly.
+#' switched accordingly. See section 4.3 of CFSHP (p.42) for more details.
 #'
-#' @return This function returns the same '\code{befa}' object, where the
-#' indicators in the matrix \code{dedic}, as well as the rows and columns of the
-#' correlation matrix of the factors saved in \code{draws}, have been switched
-#' appropriately to restore the identification of the factor model with respect
-#' to column switching.
+#' @return Same '\code{befa}' object as the one passed to the function, where
+#' the indicators in the matrix \code{dedic}, as well as the rows and columns of
+#' the correlation matrix of the factors saved in \code{draws}, have been
+#' switched appropriately to restore the identification of the factor model with
+#' respect to column switching.
 #'
 #' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
 #'
-#' @references See section 4.3, page 42, of:
-#'
+#' @references
 #' G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,
 #' R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 #' \emph{Journal of Econometrics}, 183(1), pages 31-57,
 #' \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
+#'
+#' @seealso \code{\link{post.sign.switch}} to restore identification a
+#' posteriori with respect to the sign switching problem.
 #'
 #' @examples
 #' set.seed(6)

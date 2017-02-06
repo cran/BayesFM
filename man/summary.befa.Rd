@@ -81,8 +81,8 @@ Summary results are returned as lists of data frames for HPP models, where
 the elements of the list are labeled as '\code{m1}, '\code{m2}', etc.
 }
 \description{
-Generic function to summarize posterior results of 'befa' object. Optional
-arguments can be specified to customize the summary.
+Generic function summarizing the posterior results of a 'befa' object.
+Optional arguments can be specified to customize the summary.
 }
 \details{
 This function summarizes the posterior distribution of the parameters.
@@ -110,9 +110,9 @@ When specifying \code{what = 'hppm'}, the function sorts the models according
 to the posterior frequencies of their indicator matrices in decreasing order.
 Therefore, the first model returned (labeled 'm1') corresponds to the HPP
 model.
-Low probability models can be discarded by setting \code{min.prob} (default
-is 0.20, implying that only models with a posterior probability larger than
-0.20 are displayed).
+Low probability models can be discarded by setting \code{min.prob}
+appropriately(default is 0.20, implying that only models with a posterior
+probability larger than 0.20 are displayed).
 
 HPP models can only be found if identification with respect to column
 switching has been restored \emph{a posteriori}. An error message is returned
@@ -147,5 +147,8 @@ print(alpha.mean)
 }
 \author{
 Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}
+\seealso{
+\code{\link{plot.befa}} to plot posterior results.
 }
 

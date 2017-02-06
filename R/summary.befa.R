@@ -1,8 +1,8 @@
 #'
 #' Summarize 'befa' object
 #'
-#' Generic function to summarize posterior results of 'befa' object. Optional
-#' arguments can be specified to customize the summary.
+#' Generic function summarizing the posterior results of a 'befa' object.
+#' Optional arguments can be specified to customize the summary.
 #'
 #' @param object
 #'        Object of class 'befa'.
@@ -61,9 +61,9 @@
 #' to the posterior frequencies of their indicator matrices in decreasing order.
 #' Therefore, the first model returned (labeled 'm1') corresponds to the HPP
 #' model.
-#' Low probability models can be discarded by setting \code{min.prob} (default
-#' is 0.20, implying that only models with a posterior probability larger than
-#' 0.20 are displayed).
+#' Low probability models can be discarded by setting \code{min.prob}
+#' appropriately(default is 0.20, implying that only models with a posterior
+#' probability larger than 0.20 are displayed).
 #'
 #' HPP models can only be found if identification with respect to column
 #' switching has been restored \emph{a posteriori}. An error message is returned
@@ -112,6 +112,8 @@
 #' the elements of the list are labeled as '\code{m1}, '\code{m2}', etc.
 #'
 #' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#'
+#' @seealso \code{\link{plot.befa}} to plot posterior results.
 #'
 #' @examples
 #' set.seed(6)
@@ -164,14 +166,12 @@ summary.befa <- function(object, ...)
 
   # extra arguments
   args <- list(...)
-  min.prob <- args$min.prob
-  hpd.prob <- args$hpd.prob
-  byfac    <- args$byfac
-  if (is.null(min.prob)) min.prob <- .20    # default value
-  if (is.null(hpd.prob)) hpd.prob <- .95    # default value
-  if (is.null(byfac))    byfac    <- FALSE  # default value
+  min.prob <- ifelse (is.null(args$min.prob), .20, args$min.prob)
+  hpd.prob <- ifelse (is.null(args$hpd.prob), .95, args$hpd.prob)
+  byfac    <- ifelse (is.null(args$byfac), FALSE, args$byfac)
   assertNumber(min.prob, lower = 0, upper = 1)
   assertNumber(hpd.prob, lower = 0, upper = 1)
+  assertFlag(byfac)
   what <- match.arg(args$what, choices = c('maxp', 'all', 'hppm'))
 
   # container for summary object
@@ -213,7 +213,7 @@ summary.befa <- function(object, ...)
       hpd <- c(z, z)
     } else {
       sd  <- sd(z)
-      hpd <- HPDinterval(as.mcmc(z), prob = hpd.prob)
+      hpd <- coda::HPDinterval(coda::as.mcmc(z), prob = hpd.prob)
     }
     res <- c(mean = mean(z), sd = sd, hpd.lo = hpd[1], hpd.up = hpd[2])
     if (prob) res <- c(prob = length(z)/iter, res)
@@ -228,7 +228,10 @@ summary.befa <- function(object, ...)
 
     dedic.tab  <- plyr::count(as.data.frame(dedic))
     dedic.tab  <- dedic.tab[order(dedic.tab$freq, decreasing = TRUE),]
-    dedic.tab  <- dedic.tab[dedic.tab$freq >= max(2, iter*min.prob),]
+    if (dedic.tab$freq[1] < iter*min.prob)
+      stop('Probability of HPP model lower than min.prob. ',
+           'Try to decrease the value of min.prob')
+    dedic.tab  <- dedic.tab[dedic.tab$freq >= iter*min.prob,]
 
     hppm.freq  <- dedic.tab$freq/iter
     hppm.dedic <- dedic.tab[-length(dedic.tab)]

@@ -8,31 +8,32 @@
 #' @param mcmc
 #'        Object of class '\code{befa}'.
 #' @param benchmark
-#'        Vector of length equal to the maximum number of latent factors. Each
-#'        element indicates which factor loading is used as a benchmark for the
-#'        sign switch. If \code{NULL}, the factor loadings with the highest
-#'        posterior probabilities of being different from zero in each column of
-#'        the factor loading matrix are used as benchmarks.
+#'        Vector of integers of length equal to the maximum number of latent
+#'        factors. Each element indicates which factor loading is used as a
+#'        benchmark for the sign switch. If \code{NULL}, the factor loadings
+#'        with the highest posterior probabilities of being different from zero
+#'        in each column of the factor loading matrix are used as benchmarks.
 #' @param benchmark.threshold
 #'        Minimum posterior probability for a factor loading to be considered
 #'        as a benchmark.
 #'
 #' @details The signs of the factor loadings, as well as of the corresponding
 #' correlations of the latent factors, are switched for each MCMC iteration such
-#' that the factor loadings defined as \code{benchmark}s are positive.
+#' that the factor loadings defined as \code{benchmark}s are positive. The sign
+#' switch can only be performed if \code{\link{post.column.switch}} has been run
+#' before. See section 4.3 (p.42) of CFSHP for more details.
 #'
 #' If a latent factor has no benchmarks, or if its benchmark is equal to zero at
 #' some MCMC iteration, then no sign switch is performed on the corresponding
 #' loadings and correlations for this particular factor or MCMC iteration.
 #'
-#' The sign switch can only be performed if \code{\link{post.column.switch}}
-#' has been run before. Note that in complicated models where the sampler visits
-#' several models with different numbers of latent factors, it may not be
-#' relevant to use the default value of \code{benchmark}, as the posterior
-#' probabilities that the factor loadings are different from zero would be
-#' computed across models. Instead, the user might consider finding the highest
-#' posterior probability model first, and use its top elements in each column
-#' of the factor loading matrix as benchmarks to perform the sign switch.
+#' Note that in complicated models where the sampler visits several models with
+#' different numbers of latent factors, it may not be relevant to use the
+#' default value of \code{benchmark}, as the posterior probabilities that the
+#' factor loadings are different from zero would be computed across models.
+#' Instead, the user might consider finding the highest posterior probability
+#' model first, and use its top elements in each column of the factor loading
+#' matrix as benchmarks to perform the sign switch.
 #'
 #' @return This function returns the same '\code{befa}' object, where the signs
 #' of the factor loadings and of the factor correlations have been switched
@@ -41,8 +42,7 @@
 #'
 #' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
 #'
-#' @references See section 4.3, page 42, of:
-#'
+#' @references
 #' G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,
 #' R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 #' \emph{Journal of Econometrics}, 183(1), pages 31-57,

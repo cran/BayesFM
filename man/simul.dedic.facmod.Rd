@@ -30,8 +30,9 @@ matrix.}
 \item{max.corr}{Maximum correlation allowed between the latent factors.}
 
 \item{R.max.trial}{Maximum number of trials allowed to sample from the truncated
-distribution of the covariance matrix of the latent factors (to make
-sure \code{max.corr} is not being exceeded).}
+distribution of the covariance matrix of the latent factors
+(accept/reject sampling scheme, to make sure \code{max.corr} is not
+exceeded).}
 }
 \value{
 The function returns a data frame with \code{N} observations
@@ -40,8 +41,8 @@ The parameters used to generate the data are saved as attributes:
 \code{dedic}, \code{alpha}, \code{sigma} and \code{R}.
 }
 \description{
-This function simulates data from a dedicated factor model. The parameters
-are either passed by the user or simulated by the function.
+This function simulates data from a dedicated factor model. The parameters of
+the model are either passed by the user or simulated by the function.
 }
 \details{
 The function simulates data from the following dedicated factor
@@ -91,6 +92,10 @@ all the off-diagonal elements of the implied correlation matrix \eqn{R} are
 below \code{max.corr} in absolute value. The truncation is also applied if
 the covariance matrix is used instead of the correlation matrix (i.e., if
 \code{R.corr = FALSE}).
+
+The distributions and the corresponding default values used to simulate the
+model parameters are specified as in the Monte Carlo study of CFSHP, see
+section 4.1 (p.43).
 }
 \examples{
 # generate 1000 observations from model with 4 factors and 20 variables
@@ -110,10 +115,6 @@ dat <- simul.dedic.facmod(N = 5000, dedic, alpha, sigma, R)
 Rémi Piatek \email{remi.piatek@econ.ku.dk}
 }
 \references{
-The distributions and the corresponding default values used to
-simulate the model parameters are specified as in the Monte Carlo study of
-the following article:
-
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,
 R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 \emph{Journal of Econometrics}, 183(1), pages 31-57,

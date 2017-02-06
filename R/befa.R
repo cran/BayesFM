@@ -2,17 +2,18 @@
 #' Bayesian Exploratory Factor Analysis
 #'
 #' This function implements the Bayesian Exploratory Factor Analysis
-#' (\code{befa}) developed in Conti et al. (CFSHP, 2014). It runs a MCMC sampler
-#' for a factor model with dedicated factors, where each manifest variable is
-#' allowed to load on at most one latent factor. The allocation of the manifest
-#' variables to the latent factors is not fixed \emph{a priori} but determined
-#' stochastically during sampling. The minimum number of variables dedicated to
-#' each factor can be controlled by the user to achieve the desired level of
-#' identification. The manifest variables can be continuous or dichotomous, and
-#' control variables can be introduced as covariates.
+#' (\code{befa}) approach developed in Conti et al. (CFSHP, 2014). It runs a
+#' MCMC sampler for a factor model with dedicated factors, where each manifest
+#' variable is allowed to load on at most one latent factor. The allocation of
+#' the manifest variables to the latent factors is not fixed \emph{a priori} but
+#' determined stochastically during sampling. The minimum number of variables
+#' dedicated to each factor can be controlled by the user to achieve the desired
+#' level of identification. The manifest variables can be continuous or
+#' dichotomous, and control variables can be introduced as covariates.
 #'
 #' @param model
-#'        This argument can be specified in two different ways:
+#'        This argument specifies the manifest variables and the covariates used
+#'        in the model (if any). It can be specified in two different ways:
 #'        \itemize{
 #'        \item A numeric matrix or a data frame containing the manifest
 #'          variables. This corresponds to a model without covariates,
@@ -27,9 +28,9 @@
 #'          manifest variables). Argument \code{data} can be passed to the
 #'          function in that case, otherwise parent data frame is used.
 #'        }
-#'        Binary variables should be specified as logical vectors in the data
-#'        frame to be treated as dichotomous. \code{NA} values are accepted in
-#'        manifest variables only.
+#'        Binary manifest variables should be specified as logical vectors in
+#'        the data frame to be treated as dichotomous. \code{NA} values are
+#'        accepted in manifest variables only.
 #' @param data
 #'        Data frame. If missing, parent data frame if used.
 #' @param burnin
@@ -139,8 +140,7 @@
 #'        Numeric matrix with \code{Kmax} rows and columns, and unit diagonal
 #'        elements. If missing, identity matrix is used.
 #' @param verbose
-#'        If \code{TRUE}, display information such as the progression of the
-#'        MCMC sampler.
+#'        If \code{TRUE}, display information on the progress of the function.
 #'
 #' @details \strong{Model specification.} The model is specified as follows, for
 #' each observation \eqn{i = 1, ..., N}:
@@ -159,7 +159,10 @@
 #' The \eqn{M}-vector \eqn{\epsilon_i} is the vector of error terms.
 #' Covariates can be included in the \eqn{Q}-vector \eqn{X_i} and are related to
 #' the manifest variables through the \eqn{(M \times Q)}{(M*Q)}-matrix of
-#' regression coefficients \eqn{\beta}.
+#' regression coefficients \eqn{\beta}. Intercept terms are automatically
+#' included, but can be omitted in some or all equations using the usual syntax
+#' for R formulae (e.g., 'Y1 ~ X1 - 1' specifies that that Y1 is regressed on X1
+#' and no intercept is included in the corresponding equation).
 #'
 #' The number of latent factors \eqn{K} is specified as \code{Kmax}. However,
 #' during MCMC sampling the stochastic search process on the matrix \eqn{\alpha}
@@ -189,13 +192,19 @@
 #' level of identification, see CFSHP section 2.2 (non-identified models are
 #' allowed with \code{Nid = 1}).
 #'
+#' Note that identification is achieved only with respect to the scale of the
+#' latent factors. Non-identifiability problems may affect the posterior sample
+#' because of column switching and sign switching of the factor loadings.
+#' These issues can be addressed \emph{a posteriori} with the functions
+#' \code{\link{post.column.switch}} and \code{\link{post.sign.switch}}.
+#'
 #' \strong{Prior specification.}
 #' The indicators are assumed to have the following probabilities,
 #' for \eqn{k = 1, ..., K}:
 #' \deqn{Prob(\Delta_m = e_k \mid \tau_k) = \tau_k}{
 #'       Prob(\Delta_m = e_k | \tau_k) = \tau_k}
 #' \deqn{\tau = (\tau_0, \tau_1, ..., \tau_K)}
-#' where the probabilities, if \code{indp.tau0 = FALSE}, are specified as:
+#' If \code{indp.tau0 = FALSE}, the probabilities are specified as:
 #' \deqn{\tau = [\tau_0, (1-\tau_0)\tau^*_1, ..., (1-\tau_0)\tau^*_K]}{
 #'       \tau = [\tau_0, (1-\tau_0)\tau*_1, ..., (1-\tau_0)\tau*_K]}
 #' \deqn{\tau_0 \sim \mathcal{B}eta(\kappa_0, \xi_0)}{
@@ -227,10 +236,11 @@
 #' \deqn{\beta_m \sim \mathcal{N}(0, B_0 I_Q)}{\beta_m ~ N(0, B_0 I_Q)}
 #' The covariates can be different across manifest variables, implying zero
 #' restrictions on the matrix \eqn{\beta}. To specify covariates, use a list
-#' of formulas as \code{model} (see example below).
+#' of formulas as \code{model} (see example below). Intercept terms can be
+#' introduced using
 #'
 #' To sample the correlation matrix \eqn{R} of the latent factors, marginal data
-#' augmentation (van Dyk and Meng, 2001) is implemented, see CFSHP section 2.2.
+#' augmentation is implemented (van Dyk and Meng, 2001), see CFSHP section 2.2.
 #' Using the transformation \eqn{\Omega = \Lambda^{1/2} R \Lambda^{1/2}}, the
 #' parameters \eqn{\Lambda = diag(\lambda_1, ..., \lambda_K)} are used as
 #' \emph{working parameters}. These parameters correspond to the variances of
@@ -238,11 +248,11 @@
 #' not have unit variances. Two prior distributions can be specified on the
 #' covariance matrix \eqn{\Omega} in the expanded model:
 #' \itemize{
-#'   \item Inverse-Wishart distribution if \code{HW.prior = FALSE}:
+#'   \item If \code{HW.prior = FALSE}, inverse-Wishart distribution:
 #'   \deqn{\Omega \sim \mathcal{I}nv-\mathcal{W}ishart(\nu_0, diag(S_0))}{
 #'         \Omega ~ Inv-Wishart(\nu_0, diag(S0))}
 #'   with \eqn{\nu_0} = \code{nu0} and \eqn{S_0} = \code{S0}.
-#'   \item Huang-Wand (2013) prior if \code{HW.prior = TRUE}:
+#'   \item If \code{HW.prior = TRUE}, Huang-Wand (2013) prior:
 #'   \deqn{\Omega \sim \mathcal{I}nv-\mathcal{W}ishart(\nu_0, W), \qquad
 #'         W = diag(w_1, ..., w_K)}{
 #'         \Omega ~ Inv-Wishart(nu0, W), W = diag(w_1, ..., w_K)}
@@ -260,29 +270,32 @@
 #' one missing value in the covariates are discarded from the sample (a warning
 #' message is issued in that case).
 #'
-#' @return The function returns an object of class '\code{befa}' containing:
+#' @return The function returns an object of class '\code{befa}' containing the
+#' MCMC draws of the model parameters saved in the following matrices (each
+#' matrix has '\code{iter}' rows):
 #' \itemize{
-#'   \item \code{alpha}: Matrix of MCMC draws of the factor loadings.
-#'   \item \code{sigma}: Matrix of MCMC draws of the idiosyncratic variances.
-#'   \item \code{R}: Matrix of MCMC draws of the off-diagonal elements of the
-#'         correlation matrix of the factors.
-#'   \item \code{beta}: Matrix of MCMC draws of the regression coefficients (if
-#'         any).
-#'   \item \code{dedic}: Matrix of MCMC draws of the indicators.
+#'   \item \code{alpha}: Factor loadings.
+#'   \item \code{sigma}: Idiosyncratic variances.
+#'   \item \code{R}: Correlation matrix of the latent factors (off-diagonal
+#'         elements only).
+#'   \item \code{beta}: regression coefficients (if any).
+#'   \item \code{dedic}: indicators (integers indicating on which factors the
+#'         manifest variable load).
+#'   }
+#' The returned object also contains:
+#' \itemize{
 #'   \item \code{nfac}: Vector of number of 'active' factors across MCMC
 #'         iterations (i.e., factors loaded by at least \code{Nid} manifest
 #'         variables).
 #'   \item \code{MHacc}: Logical vector indicating accepted proposals of
 #'         Metropolis-Hastings algorithm.
-#'   \item \code{call}: Function call.
 #' }
-#' The parameters \code{Kmax} and \code{Nid} are saved as object attributes.
-#'
-#' Note that identification is achieved only with respect to the scale of the
-#' latent factors. Non-identifiability problems may affect the posterior sample
-#' because of column switching and sign switching of the factor loadings.
-#' These issues can be addressed \emph{a posteriori} with the functions
-#' \code{\link{post.column.switch}} and \code{\link{post.sign.switch}}.
+#' The parameters \code{Kmax} and \code{Nid} are saved as object attributes, as
+#' well as the function call and the number of mcmc iterations (\code{burnin}
+#' and \code{iter}), and two logical variables indicating if the returned object
+#' has been post processed to address the column switching problem
+#' (\code{post.column.switch}) and the sign switching problem
+#' (\code{post.sign.switch}).
 #'
 #' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
 #'
@@ -305,7 +318,14 @@
 #' the correlation matrix of the latent factors to restore identification
 #' \emph{a posteriori}.
 #'
-#' @seealso \code{\link{summary.befa}} to summarize posterior results.
+#' @seealso \code{\link{summary.befa}} and \code{\link{plot.befa}} to summarize
+#' and plot the posterior results.
+#'
+#' @seealso \code{\link{simul.R.prior}} and \code{\link{simul.nfac.prior}} to
+#' simulate the prior distribution of the correlation matrix of the factors and
+#' the prior distribution of the indicator matrix, respectively. This is useful
+#' to perform prior sensitivity analysis and to understand the role of the
+#' corresponding parameters in the factor search.
 #'
 #' @examples
 #' #### model without covariates
@@ -326,13 +346,13 @@
 #' mcmc <- post.sign.switch(mcmc)
 #'
 #' summary(mcmc)  # summarize posterior results
-#' plot(mcmc)     # plot trace and frequency of number of active factors
+#' plot(mcmc)     # plot posterior results
 #'
 #' # summarize highest posterior probability (HPP) model
 #' summary(mcmc, what = 'hppm')
 #'
 #' #### model with covariates
-#'
+#' \donttest{
 #' # generate covariates and regression coefficients
 #' Xcov <- cbind(1, matrix(rnorm(4*N), ncol = 4))
 #' colnames(Xcov) <- c('(Intercept)', paste0('X', 1:4))
@@ -342,11 +362,11 @@
 #' Y <- Y + Xcov %*% beta
 #'
 #' # specify model
-#' model <- c('~ X1',                           # X1 covariate in all equations
-#'            paste0('Y', 1:5,   ' ~ X2'),      # X2 covariate for Y1-Y5 only
-#'            paste0('Y', 6:10,  ' ~ X3'),      # X3 covariate for Y6-Y10 only
-#'            paste0('Y', 11:15, ' ~ X4'))      # X4 covariate for Y11-Y15 only
-#' model <- lapply(as.list(model), as.formula)  # make list of formulas
+#' model <- c('~ X1',                        # X1 covariate in all equations
+#'            paste0('Y', 1:5,   ' ~ X2'),   # X2 covariate for Y1-Y5 only
+#'            paste0('Y', 6:10,  ' ~ X3'),   # X3 covariate for Y6-Y10 only
+#'            paste0('Y', 11:15, ' ~ X4'))   # X4 covariate for Y11-Y15 only
+#' model <- lapply(model, as.formula)        # make list of formulas
 #'
 #' # run MCMC sampler, post process and summarize
 #' mcmc <- befa(model, data = data.frame(Y, Xcov), Kmax = 5, iter = 1000)
@@ -359,6 +379,7 @@
 #' beta.comp <- cbind(beta[beta != 0], mcmc.sum$beta[, 'mean'])
 #' colnames(beta.comp) <- c('true', 'mcmc')
 #' print(beta.comp, digits = 3)
+#' }
 #'
 #' @export befa
 #' @import checkmate
@@ -372,7 +393,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
                  indp.tau0 = TRUE, rnd.step = TRUE, n.step = 5,
                  search.delay = min(burnin, 10), R.delay = min(burnin, 100),
                  dedic.start, alpha.start, sigma.start, beta.start, R.start,
-                 verbose = FALSE)
+                 verbose = TRUE)
 {
 
   checkArgs <- makeAssertCollection()
@@ -381,53 +402,57 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   ## data and model specification
 
   if (missing(data))
-    data <- parent.frame() else assertDataFrame(data)
+    data <- parent.frame()
+  else
+    assertDataFrame(data)
 
   if (is.matrix(model))
     model <- as.data.frame(model)
 
   if (is.data.frame(model)) {
-    assertDataFrame(model, types = c("double", "logical"), all.missing = FALSE)
-    Ycat <- sapply(model, typeof)
-    Yobs <- as.matrix(model)
-    Xobs <- nX <- 0
+
+    assertDataFrame(model, types = c('double', 'logical'), all.missing = FALSE)
+    Ytype <- sapply(model, typeof)
+    Yobs  <- as.matrix(model)
+    Xobs  <- nX <- 0
     YXloc <- FALSE
-  } else if (is.list(model) & all(sapply(model, is.formula))) {
-    all.var <- unique(unlist(lapply(model, all.vars)))
-    ind <- all.var %in% names(data)
-    if (!all(ind)) {
-      checkArgs$push(paste0("Following variable(s) not in data frame: ",
-                            paste0(all.var[!ind],
-        collapse = ", "), "."))
-    } else {
-      tmp <- extract.data(model, data)
-      for (w in tmp$warnmsg) warning(w, immediate. = TRUE)
+
+  } else if (is.list(model) &
+             all(sapply(model, is.formula))) {
+
+    tmp <- extract.data(model, data)
+    if (!is.null(tmp$errmsg)) {
       for (w in tmp$errmsg) checkArgs$push(w)
-      Yobs <- tmp$Yobs
-      Ycat <- tmp$Ycat
-      Xobs <- tmp$Xobs
-      Xlab <- colnames(Xobs)
+    } else {
+      for (w in tmp$warnmsg) warning(w, immediate. = TRUE)
+      Yobs  <- tmp$Yobs
+      Ytype <- tmp$Ytype
+      Xobs  <- tmp$Xobs
+      Xlab  <- colnames(Xobs)
       YXloc <- tmp$YXloc
-      nX <- ncol(Xobs)
+      nX    <- ncol(Xobs)
     }
+
   } else {
-    checkArgs$push("Y should be a matrix, a data frame or a list of formulas.")
+
+    checkArgs$push('Y should be a matrix, a data frame or a list of formulas.')
+
   }
 
   # if any errors, report and stop
   reportAssertions(checkArgs)
 
   # check manifest variables are either continuous or dichotomous
-  Ycat <- ifelse(Ycat == "double" | Ycat == "numeric", 0,
-                 ifelse(Ycat == "logical", 2, 1))
-  Yind <- Ycat == 0 | Ycat == 2
+  Ycat <- rep(0, length(Ytype))
+  Ycat[Ytype == 'logical'] <- 2
+  Yind <- Ytype %in% c('double', 'numeric', 'logical')
   if (any(!Yind)) {
-    checkArgs$push("Following variables not continuous nor dichotomous:",
-      paste0(Ylab[!Yind], collapse = ", "), ".")
+    checkArgs$push(paste('following variables not continuous nor dichotomous:',
+                   paste0(Ylab[!Yind], collapse = ', ')))
   }
 
-  Ylab <- colnames(Yobs)
-  nobs <- nrow(Yobs)
+  Ylab  <- colnames(Yobs)
+  nobs  <- nrow(Yobs)
   nmeas <- ncol(Yobs)
   nbeta <- sum(YXloc)
   Ymiss <- is.na(Yobs)
@@ -664,7 +689,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   colnames(par.mcmc$alpha) <- paste0("alpha:", Ylab)
   colnames(par.mcmc$sigma) <- paste0("sigma:", Ylab)
 
-  iter.lab <- seq(burnin + 1, burnin + iter)
+  iter.lab <- burnin + 1:iter
   rownames(par.mcmc$alpha) <- iter.lab
   rownames(par.mcmc$sigma) <- iter.lab
   rownames(par.mcmc$R)     <- iter.lab
@@ -694,7 +719,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   output$dedic <- dedic.mcmc
   output$nfac  <- nfac.mcmc
   output$MHacc <- mcmc$MHacc
-  output$call  <- match.call()
+  attr(output, "call")   <- match.call()
   attr(output, "title")  <- "BEFA posterior sample"
   attr(output, "Kmax")   <- Kmax
   attr(output, "Nid")    <- Nid

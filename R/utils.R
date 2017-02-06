@@ -53,3 +53,14 @@ mat2list <- function(x, byrow = FALSE) {
   }
   return(y)
 }
+
+
+### get maximum correlation (in absolute value) from correlation matrix
+
+get.maxcor <- function(x) max(abs(x[lower.tri(x)]))
+
+
+### get minimum eigenvalue of symmetric matrix
+
+get.mineig <- function(x) min(eigen(x, symmetric = TRUE,
+                                    only.values = TRUE)$values)

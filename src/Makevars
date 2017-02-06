@@ -1,6 +1,6 @@
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-OBJECTS = befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o global.o indicators_dedic.o loading_idioprec.o matrix.o mcmc_progress.o mda.o measurement.o probability.o
+OBJECTS = befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o global.o indicators_dedic.o loading_idioprec.o matrix.o mcmc_progress.o mda.o measurement.o probability.o simul_prior_nfac.o
 
 all: $(SHLIB)
 
@@ -12,7 +12,7 @@ befa.o : factor_normal_block.o
 
 factor_normal_block.o : factor_normal.o
 
-befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o matrix.o mda.o measurement.o probability.o : global.o
+befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o matrix.o mda.o measurement.o probability.o simul_prior_nfac.o : global.o
 
 befa.o covmat_block_invwishart.o factor_normal_block.o : indicators_dedic.o
 
@@ -26,5 +26,5 @@ befa.o : mda.o
 
 befa.o : measurement.o
 
-befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o mda.o measurement.o : probability.o
+befa.o covariates.o covmat_block_invwishart.o factor_normal_block.o factor_normal.o indicators_dedic.o loading_idioprec.o mda.o measurement.o simul_prior_nfac.o : probability.o
 

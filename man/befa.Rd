@@ -9,10 +9,11 @@ befa(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax, A0 = 10,
   kappa0 = 2, xi0 = 1, kappa = 1/Kmax, indp.tau0 = TRUE,
   rnd.step = TRUE, n.step = 5, search.delay = min(burnin, 10),
   R.delay = min(burnin, 100), dedic.start, alpha.start, sigma.start,
-  beta.start, R.start, verbose = FALSE)
+  beta.start, R.start, verbose = TRUE)
 }
 \arguments{
-\item{model}{This argument can be specified in two different ways:
+\item{model}{This argument specifies the manifest variables and the covariates used
+in the model (if any). It can be specified in two different ways:
 \itemize{
 \item A numeric matrix or a data frame containing the manifest
   variables. This corresponds to a model without covariates,
@@ -27,9 +28,9 @@ befa(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax, A0 = 10,
   manifest variables). Argument \code{data} can be passed to the
   function in that case, otherwise parent data frame is used.
 }
-Binary variables should be specified as logical vectors in the data
-frame to be treated as dichotomous. \code{NA} values are accepted in
-manifest variables only.}
+Binary manifest variables should be specified as logical vectors in
+the data frame to be treated as dichotomous. \code{NA} values are
+accepted in manifest variables only.}
 
 \item{data}{Data frame. If missing, parent data frame if used.}
 
@@ -139,44 +140,46 @@ missing.}
 Numeric matrix with \code{Kmax} rows and columns, and unit diagonal
 elements. If missing, identity matrix is used.}
 
-\item{verbose}{If \code{TRUE}, display information such as the progression of the
-MCMC sampler.}
+\item{verbose}{If \code{TRUE}, display information on the progress of the function.}
 }
 \value{
-The function returns an object of class '\code{befa}' containing:
+The function returns an object of class '\code{befa}' containing the
+MCMC draws of the model parameters saved in the following matrices (each
+matrix has '\code{iter}' rows):
 \itemize{
-  \item \code{alpha}: Matrix of MCMC draws of the factor loadings.
-  \item \code{sigma}: Matrix of MCMC draws of the idiosyncratic variances.
-  \item \code{R}: Matrix of MCMC draws of the off-diagonal elements of the
-        correlation matrix of the factors.
-  \item \code{beta}: Matrix of MCMC draws of the regression coefficients (if
-        any).
-  \item \code{dedic}: Matrix of MCMC draws of the indicators.
+  \item \code{alpha}: Factor loadings.
+  \item \code{sigma}: Idiosyncratic variances.
+  \item \code{R}: Correlation matrix of the latent factors (off-diagonal
+        elements only).
+  \item \code{beta}: regression coefficients (if any).
+  \item \code{dedic}: indicators (integers indicating on which factors the
+        manifest variable load).
+  }
+The returned object also contains:
+\itemize{
   \item \code{nfac}: Vector of number of 'active' factors across MCMC
         iterations (i.e., factors loaded by at least \code{Nid} manifest
         variables).
   \item \code{MHacc}: Logical vector indicating accepted proposals of
         Metropolis-Hastings algorithm.
-  \item \code{call}: Function call.
 }
-The parameters \code{Kmax} and \code{Nid} are saved as object attributes.
-
-Note that identification is achieved only with respect to the scale of the
-latent factors. Non-identifiability problems may affect the posterior sample
-because of column switching and sign switching of the factor loadings.
-These issues can be addressed \emph{a posteriori} with the functions
-\code{\link{post.column.switch}} and \code{\link{post.sign.switch}}.
+The parameters \code{Kmax} and \code{Nid} are saved as object attributes, as
+well as the function call and the number of mcmc iterations (\code{burnin}
+and \code{iter}), and two logical variables indicating if the returned object
+has been post processed to address the column switching problem
+(\code{post.column.switch}) and the sign switching problem
+(\code{post.sign.switch}).
 }
 \description{
 This function implements the Bayesian Exploratory Factor Analysis
-(\code{befa}) developed in Conti et al. (CFSHP, 2014). It runs a MCMC sampler
-for a factor model with dedicated factors, where each manifest variable is
-allowed to load on at most one latent factor. The allocation of the manifest
-variables to the latent factors is not fixed \emph{a priori} but determined
-stochastically during sampling. The minimum number of variables dedicated to
-each factor can be controlled by the user to achieve the desired level of
-identification. The manifest variables can be continuous or dichotomous, and
-control variables can be introduced as covariates.
+(\code{befa}) approach developed in Conti et al. (CFSHP, 2014). It runs a
+MCMC sampler for a factor model with dedicated factors, where each manifest
+variable is allowed to load on at most one latent factor. The allocation of
+the manifest variables to the latent factors is not fixed \emph{a priori} but
+determined stochastically during sampling. The minimum number of variables
+dedicated to each factor can be controlled by the user to achieve the desired
+level of identification. The manifest variables can be continuous or
+dichotomous, and control variables can be introduced as covariates.
 }
 \details{
 \strong{Model specification.} The model is specified as follows, for
@@ -196,7 +199,10 @@ The \eqn{K}-vector \eqn{\theta_i} contains the latent factors, and
 The \eqn{M}-vector \eqn{\epsilon_i} is the vector of error terms.
 Covariates can be included in the \eqn{Q}-vector \eqn{X_i} and are related to
 the manifest variables through the \eqn{(M \times Q)}{(M*Q)}-matrix of
-regression coefficients \eqn{\beta}.
+regression coefficients \eqn{\beta}. Intercept terms are automatically
+included, but can be omitted in some or all equations using the usual syntax
+for R formulae (e.g., 'Y1 ~ X1 - 1' specifies that that Y1 is regressed on X1
+and no intercept is included in the corresponding equation).
 
 The number of latent factors \eqn{K} is specified as \code{Kmax}. However,
 during MCMC sampling the stochastic search process on the matrix \eqn{\alpha}
@@ -226,13 +232,19 @@ that can be loaded by \code{Nid} variables. The user is free to select the
 level of identification, see CFSHP section 2.2 (non-identified models are
 allowed with \code{Nid = 1}).
 
+Note that identification is achieved only with respect to the scale of the
+latent factors. Non-identifiability problems may affect the posterior sample
+because of column switching and sign switching of the factor loadings.
+These issues can be addressed \emph{a posteriori} with the functions
+\code{\link{post.column.switch}} and \code{\link{post.sign.switch}}.
+
 \strong{Prior specification.}
 The indicators are assumed to have the following probabilities,
 for \eqn{k = 1, ..., K}:
 \deqn{Prob(\Delta_m = e_k \mid \tau_k) = \tau_k}{
       Prob(\Delta_m = e_k | \tau_k) = \tau_k}
 \deqn{\tau = (\tau_0, \tau_1, ..., \tau_K)}
-where the probabilities, if \code{indp.tau0 = FALSE}, are specified as:
+If \code{indp.tau0 = FALSE}, the probabilities are specified as:
 \deqn{\tau = [\tau_0, (1-\tau_0)\tau^*_1, ..., (1-\tau_0)\tau^*_K]}{
       \tau = [\tau_0, (1-\tau_0)\tau*_1, ..., (1-\tau_0)\tau*_K]}
 \deqn{\tau_0 \sim \mathcal{B}eta(\kappa_0, \xi_0)}{
@@ -264,10 +276,11 @@ assumed on each row \eqn{m = 1, ..., M} of \eqn{\beta}:
 \deqn{\beta_m \sim \mathcal{N}(0, B_0 I_Q)}{\beta_m ~ N(0, B_0 I_Q)}
 The covariates can be different across manifest variables, implying zero
 restrictions on the matrix \eqn{\beta}. To specify covariates, use a list
-of formulas as \code{model} (see example below).
+of formulas as \code{model} (see example below). Intercept terms can be
+introduced using
 
 To sample the correlation matrix \eqn{R} of the latent factors, marginal data
-augmentation (van Dyk and Meng, 2001) is implemented, see CFSHP section 2.2.
+augmentation is implemented (van Dyk and Meng, 2001), see CFSHP section 2.2.
 Using the transformation \eqn{\Omega = \Lambda^{1/2} R \Lambda^{1/2}}, the
 parameters \eqn{\Lambda = diag(\lambda_1, ..., \lambda_K)} are used as
 \emph{working parameters}. These parameters correspond to the variances of
@@ -275,11 +288,11 @@ the latent factors in an expanded version of the model where the factors do
 not have unit variances. Two prior distributions can be specified on the
 covariance matrix \eqn{\Omega} in the expanded model:
 \itemize{
-  \item Inverse-Wishart distribution if \code{HW.prior = FALSE}:
+  \item If \code{HW.prior = FALSE}, inverse-Wishart distribution:
   \deqn{\Omega \sim \mathcal{I}nv-\mathcal{W}ishart(\nu_0, diag(S_0))}{
         \Omega ~ Inv-Wishart(\nu_0, diag(S0))}
   with \eqn{\nu_0} = \code{nu0} and \eqn{S_0} = \code{S0}.
-  \item Huang-Wand (2013) prior if \code{HW.prior = TRUE}:
+  \item If \code{HW.prior = TRUE}, Huang-Wand (2013) prior:
   \deqn{\Omega \sim \mathcal{I}nv-\mathcal{W}ishart(\nu_0, W), \qquad
         W = diag(w_1, ..., w_K)}{
         \Omega ~ Inv-Wishart(nu0, W), W = diag(w_1, ..., w_K)}
@@ -316,13 +329,13 @@ mcmc <- post.column.switch(mcmc)
 mcmc <- post.sign.switch(mcmc)
 
 summary(mcmc)  # summarize posterior results
-plot(mcmc)     # plot trace and frequency of number of active factors
+plot(mcmc)     # plot posterior results
 
 # summarize highest posterior probability (HPP) model
 summary(mcmc, what = 'hppm')
 
 #### model with covariates
-
+\donttest{
 # generate covariates and regression coefficients
 Xcov <- cbind(1, matrix(rnorm(4*N), ncol = 4))
 colnames(Xcov) <- c('(Intercept)', paste0('X', 1:4))
@@ -332,11 +345,11 @@ beta <- rbind(rnorm(15), rnorm(15), diag(3) \%x\% t(rnorm(5)))
 Y <- Y + Xcov \%*\% beta
 
 # specify model
-model <- c('~ X1',                           # X1 covariate in all equations
-           paste0('Y', 1:5,   ' ~ X2'),      # X2 covariate for Y1-Y5 only
-           paste0('Y', 6:10,  ' ~ X3'),      # X3 covariate for Y6-Y10 only
-           paste0('Y', 11:15, ' ~ X4'))      # X4 covariate for Y11-Y15 only
-model <- lapply(as.list(model), as.formula)  # make list of formulas
+model <- c('~ X1',                        # X1 covariate in all equations
+           paste0('Y', 1:5,   ' ~ X2'),   # X2 covariate for Y1-Y5 only
+           paste0('Y', 6:10,  ' ~ X3'),   # X3 covariate for Y6-Y10 only
+           paste0('Y', 11:15, ' ~ X4'))   # X4 covariate for Y11-Y15 only
+model <- lapply(model, as.formula)        # make list of formulas
 
 # run MCMC sampler, post process and summarize
 mcmc <- befa(model, data = data.frame(Y, Xcov), Kmax = 5, iter = 1000)
@@ -349,6 +362,7 @@ mcmc.sum
 beta.comp <- cbind(beta[beta != 0], mcmc.sum$beta[, 'mean'])
 colnames(beta.comp) <- c('true', 'mcmc')
 print(beta.comp, digits = 3)
+}
 
 }
 \author{
@@ -375,6 +389,13 @@ for column switching and sign switching of the factor loading matrix and of
 the correlation matrix of the latent factors to restore identification
 \emph{a posteriori}.
 
-\code{\link{summary.befa}} to summarize posterior results.
+\code{\link{summary.befa}} and \code{\link{plot.befa}} to summarize
+and plot the posterior results.
+
+\code{\link{simul.R.prior}} and \code{\link{simul.nfac.prior}} to
+simulate the prior distribution of the correlation matrix of the factors and
+the prior distribution of the indicator matrix, respectively. This is useful
+to perform prior sensitivity analysis and to understand the role of the
+corresponding parameters in the factor search.
 }
 

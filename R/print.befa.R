@@ -7,7 +7,7 @@ print.befa <- function(x, ...)
 
   cat('BEFA output - Bayesian Exploratory Factor Analysis\n\n')
   cat('call:\n  ')
-  print(x$call)
+  print(attr(x, 'call'))
   cat('\n')
   cat('posterior column switch:', attr(x, "post.column.switch"), '\n')
   cat('posterior sign switch:  ', attr(x, "post.sign.switch"), '\n\n')

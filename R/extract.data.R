@@ -1,88 +1,90 @@
-#' @importFrom stats na.omit cor
+#' @importFrom stats complete.cases cor
 
 extract.data <- function(model, data)
 {
 
   errmsg <- warnmsg <- NULL
 
-  eqIng <- list()
-  i <- 1
-  for (eq in model) {
-    eqf <- model.frame(eq, data, na.action = NULL)
-    eqt <- terms(eqf)
-    eqIng[[i]] <- list(dat = eqf)
-    if (attr(eqt, "response") == 1) {
-      eqIng[[i]]$Ylab <- colnames(eqf)[1]
-      eqIng[[i]]$Ycat <- attr(eqt, "dataClasses")[[1]]
-      eqIng[[i]]$Xlab <- colnames(eqf)[-1]
+  # get equation terms
+  neq <- length(model)
+  all.terms <- lapply(model, terms)
+
+  # which equations have a manifest variable?
+  resp <- sapply(all.terms, attr, 'response')
+  resp <- as.logical(resp)
+
+  # manifest variables
+  allY <- sapply(lapply(model, all.vars), '[', 1)
+  Ylab <- unique(allY[resp])
+  nY   <- length(Ylab)
+  allY[!resp] <- NA
+
+  # intercept terms
+  const <- sapply(all.terms, attr, 'intercept')
+  const <- as.logical(const)
+
+  # covariates
+  allX <- lapply(all.terms, attr, 'term.labels')
+  Xlab <- unique(unlist(allX))
+  Xlab <- c('(Intercept)', Xlab)
+  nX   <- length(Xlab)
+
+  YXloc <- matrix(FALSE, nY, nX, dimnames = list(Ylab, Xlab))
+  for (i in 1:neq) {
+    if (is.na(allY[i])) {
+      YXloc[, unlist(allX[i])] <- TRUE
+      YXloc[, '(Intercept)'] <- const[i]
     } else {
-      eqIng[[i]]$Ylab <- NA
-      eqIng[[i]]$Ycat <- NA
-      eqIng[[i]]$Xlab <- colnames(eqf)
-    }
-    eqIng[[i]]$cst <- attr(eqt, "intercept") == 1
-    i <- i + 1
-  }
-
-  # prepare objects to be returned
-
-  Ylab <- na.omit(sapply(eqIng, function(x) return(x$Ylab)))
-  Xlab <- lapply(eqIng, function(x) return(x$Xlab))
-  Xlab <- unique(unlist(Xlab))
-
-  YXdat <- lapply(eqIng, function(x) return(x$dat))
-  YXdat <- do.call("cbind", YXdat)
-  YXdat <- YXdat[!duplicated(t(YXdat))]
-
-  Yobs <- as.matrix(YXdat[Ylab])
-  Xobs <- as.matrix(YXdat[Xlab])
-  Xobs <- cbind("(Intercept)" = 1, Xobs)
-  Xlab <- colnames(Xobs)
-  nmeas <- length(Ylab)
-  nX <- length(Xlab)
-
-  YXloc <- matrix(FALSE, nmeas, nX, dimnames = list(Ylab, Xlab))
-  YXloc[, 1] <- TRUE  # intercept terms by default
-  Ycat <- rep(NA, nmeas)
-  names(Ycat) <- Ylab
-  for (eq in eqIng) {
-    if (is.na(eq$Ylab)) {
-      YXloc[, eq$Xlab] <- TRUE
-      # YXloc[, '(Intercept)'] <- eq$cst
-    } else {
-      YXloc[eq$Ylab, eq$Xlab] <- TRUE
-      YXloc[eq$Ylab, "(Intercept)"] <- eq$cst
-      Ycat[eq$Ylab] <- eq$Ycat
+      YXloc[allY[i], unlist(allX[i])] <- TRUE
+      YXloc[allY[i], '(Intercept)'] <- const[i]
     }
   }
 
-  # missing values in covariates
-  if (any(is.na(Xobs))) {
-    nm <- nrow(Yobs)
-    Xobs <- na.omit(Xobs)
-    Yobs <- Yobs[rownames(Xobs), ]
-    nm <- nm - nrow(Yobs)
-    warnmsg <- c(warnmsg, paste0("Observations with NA values in at least ",
-      "one covariate were discarded (", nm, " cases)."))
+  # check that all variables are in data frame
+  YXlab <- unique(unlist(c(Ylab, Xlab)))
+  YXlab <- YXlab[YXlab != '(Intercept)']   # no error message for intercept term
+  indat <- YXlab %in% names(data)
+  if (any(!indat)) {
+    errmsg <- paste('following variables not in data:\n   ',
+                    paste(YXlab[!indat], collapse = ', '))
+    return(list(errmsg))
+  }
+  YXdata <- data[YXlab]
+  nobs   <- nrow(YXdata)
+  YXdata[["(Intercept)"]] <- 1    # add vector of ones for intercept terms
+
+  # type of manifest variables
+  Ytype <- sapply(YXdata[Ylab], typeof)
+
+  # discard missing values in covariates
+  nomiss <- complete.cases(YXdata[Xlab])
+  YXdata <- YXdata[nomiss, ]
+  if (!all(nomiss)) {
+    warnmsg <- paste(sum(!nomiss), 'observations discarded because of NAs',
+                     'in at least one covariate')
+    nobs <- nobs - sum(!nomiss)
   }
 
-  # check for multicollinearity
-  Xcor <- cor(Xobs[, -1])  # ignore vector of ones for intercept
-  for (i in 1:nmeas) {
+  # check for multicollinearity in covariates specified in each equation
+  Xcor <- cor(data[Xlab[Xlab != '(Intercept)']])  # exclude intercept
+  for (i in 1:nY) {
     Xcori <- Xcor[YXloc[i, -1], YXloc[i, -1]]
     Xcori <- Xcori[lower.tri(Xcori)]
     if (any(abs(Xcori - 1) < 1e-12)) {
-      errmsg <- c(errmsg, paste0("Perfect multicollinearity between covariates",
-        " of measurement ", Ylab[i], "."))
+      errmsg <- c(errmsg, paste('perfect multicollinearity between covariates',
+                                 'of manifest variable', Ylab[i]))
     } else if (any(abs(Xcori) > 0.95)) {
-      warnmsg <- c(warnmsg, paste0("Possible multicollinearity problem ",
-                                   "between covariates for measurement ",
-                                   Ylab[i], "."))
+      warnmsg <- c(warnmsg, paste('possible multicollinearity problem between',
+                                  'covariates of manifest variable', Ylab[i]))
     }
   }
 
-  # return objects
-  return(list(Yobs = Yobs, Ycat = Ycat, Xobs = Xobs, YXloc = YXloc,
-              errmsg = errmsg, warnmsg = warnmsg))
+  # return
+  return(list(Ytype   = Ytype,
+              Yobs    = as.matrix(YXdata[Ylab]),
+              Xobs    = as.matrix(YXdata[Xlab]),
+              YXloc   = YXloc,
+              errmsg  = errmsg,
+              warnmsg = warnmsg))
 
 }

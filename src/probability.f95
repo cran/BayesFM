@@ -13,6 +13,7 @@ module probability
   public :: rtnorm
   public :: rgamma
   public :: rinvgamma
+  public :: rdirich
   public :: rwishart
   public :: rinvwishart
   public :: rpoisson
@@ -313,6 +314,28 @@ contains
     rinvgamma = 1._r8/rgamma(a, 1._r8/b)
 
   end function rinvgamma
+
+
+  !-----------------------------------------------------------------------------
+  ! generates vector from Dirichlet distribution
+  ! with concentration parameters alpha
+
+  function rdirich(alpha)
+    implicit none
+    real(r8), intent(in) :: alpha(:)
+    real(r8)             :: rdirich(size(alpha))
+    integer              :: i
+
+    if(any(alpha <= 0._r8)) then
+      call rexit('*** ERROR: alpha should be strictly positive (rdirich) ***')
+    end if
+
+    do i = 1, size(alpha)
+      rdirich(i) = rgamma(alpha(i), 1._r8)
+    end do
+    rdirich = rdirich / sum(rdirich)
+
+  end function rdirich
 
 
   !-----------------------------------------------------------------------------
