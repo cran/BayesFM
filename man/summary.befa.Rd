@@ -91,10 +91,12 @@ The algorithm may visit different configurations of the indicator matrix
 different latent factors. When the posterior distribution of the factor
 loadings is summarized separately for each manifest variable
 (\code{what = 'maxp'} or \code{what = 'all'}), the function provides the
-latent factors each manifest variable is allocated to (\code{dedic}), and the
-corresponding posterior probability (\code{prob}).
-Low probability cases can be discarded by setting \code{min.prob}
-appropriately (default is 0.20).
+latent factor each manifest variable is allocated to (\code{dedic}), and the
+corresponding posterior probability (\code{prob}). If \code{dedic = 0}, then
+\code{prob} corresponds to the posterior probability that the manifest
+variable is discarded. Discarded variables are listed last if
+\code{byfac = TRUE}. Low probability cases can be discarded by setting
+\code{min.prob} appropriately (default is 0.20).
 
 Idiosyncratic variances, factor correlation matrix and regression
 coefficients (if any) are summarized across all MCMC iterations if

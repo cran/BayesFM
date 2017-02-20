@@ -327,7 +327,7 @@ mcmc <- befa(Y, Kmax = 5, iter = 1000)
 # post process MCMC draws to restore identification
 mcmc <- post.column.switch(mcmc)
 mcmc <- post.sign.switch(mcmc)
-
+\donttest{
 summary(mcmc)  # summarize posterior results
 plot(mcmc)     # plot posterior results
 
@@ -335,7 +335,7 @@ plot(mcmc)     # plot posterior results
 summary(mcmc, what = 'hppm')
 
 #### model with covariates
-\donttest{
+
 # generate covariates and regression coefficients
 Xcov <- cbind(1, matrix(rnorm(4*N), ncol = 4))
 colnames(Xcov) <- c('(Intercept)', paste0('X', 1:4))

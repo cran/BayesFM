@@ -1,6 +1,6 @@
 #' @export
 #' @importFrom ggplot2 ggplot aes_string geom_density theme labs element_blank
-#' @importFrom ggplot2 ggtitle ggplot_gtable ggplot_build
+#' @importFrom ggplot2 ggplot_gtable ggplot_build
 #' @importFrom gridExtra grid.arrange arrangeGrob
 
 plot.simul.R.prior <- function(x, ...)

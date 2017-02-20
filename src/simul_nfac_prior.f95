@@ -1,4 +1,4 @@
-subroutine simul_nfac_prior(nmeas, Kmax, Nid, kappa, nrep, seed, nfac, restrid)
+subroutine simnfacprior(nmeas, Kmax, Nid, kappa, nrep, seed, nfac, restrid)
 
   use global
   use probability, only : set_seed, rdirich, runif
@@ -51,4 +51,4 @@ subroutine simul_nfac_prior(nmeas, Kmax, Nid, kappa, nrep, seed, nfac, restrid)
 
   end do
 
-end subroutine simul_nfac_prior
+end subroutine simnfacprior

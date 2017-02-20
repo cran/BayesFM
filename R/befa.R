@@ -344,7 +344,7 @@
 #' # post process MCMC draws to restore identification
 #' mcmc <- post.column.switch(mcmc)
 #' mcmc <- post.sign.switch(mcmc)
-#'
+#' \donttest{
 #' summary(mcmc)  # summarize posterior results
 #' plot(mcmc)     # plot posterior results
 #'
@@ -352,7 +352,7 @@
 #' summary(mcmc, what = 'hppm')
 #'
 #' #### model with covariates
-#' \donttest{
+#'
 #' # generate covariates and regression coefficients
 #' Xcov <- cbind(1, matrix(rnorm(4*N), ncol = 4))
 #' colnames(Xcov) <- c('(Intercept)', paste0('X', 1:4))
@@ -383,9 +383,8 @@
 #'
 #' @export befa
 #' @import checkmate
-#' @useDynLib BayesFM
-#' @importFrom stats is.empty.model model.frame terms
-#' @importFrom stats rWishart rgamma rnorm runif
+#' @importFrom stats rnorm runif
+#' @useDynLib BayesFM, .registration = TRUE, .fixes = "F_"
 
 befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
                  A0 = 10, B0 = 10, c0 = 2, C0 = 1, HW.prior = TRUE,
@@ -453,7 +452,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
 
   Ylab  <- colnames(Yobs)
   nobs  <- nrow(Yobs)
-  nmeas <- ncol(Yobs)
+  nvar  <- ncol(Yobs)
   nbeta <- sum(YXloc)
   Ymiss <- is.na(Yobs)
   Yobs[Ymiss] <- -99999  # flag for NA (not used in Fortran subroutine)
@@ -463,14 +462,14 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   ## number of latent factors and identification restrictions
 
   # minimum number of dedicated variables per factor
-  assertInt(Nid, lower = 1, upper = nmeas, add = checkArgs)
+  assertInt(Nid, lower = 1, upper = nvar, add = checkArgs)
 
   # check maximum number of latent factors and Ledermann bound
-  Ledermann.bound <- 0.5 * (2 * nmeas + 1 - sqrt(8 * nmeas + 1))
+  Ledermann.bound <- 0.5 * (2 * nvar + 1 - sqrt(8 * nvar + 1))
   if (missing(Kmax)) {
-    Kmax <- floor(min(nmeas/Nid, Ledermann.bound))
+    Kmax <- floor(min(nvar/Nid, Ledermann.bound))
   } else {
-    assertInt(Kmax, lower = 1, upper = nmeas, add = checkArgs)
+    assertInt(Kmax, lower = 1, upper = nvar, add = checkArgs)
   }
   if (Kmax > Ledermann.bound) {
     warning("Check identification! (Kmax exceeds Ledermann bound)",
@@ -478,7 +477,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   }
 
   # check consistency of Nid and Kmax
-  if (Kmax > floor(nmeas/Nid)) {
+  if (Kmax > floor(nvar/Nid)) {
     msg <- paste("Too many latent factors specified given identification",
                  "restriction. Check arguments Nid and Kmax.")
     checkArgs$push(msg)
@@ -505,10 +504,10 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   }
 
   tiny <- 10^-9
-  A0 <- check.prior(A0, nmeas, tiny, "A0")
-  B0 <- check.prior(B0, nmeas, tiny, "B0")
-  c0 <- check.prior(c0, nmeas, tiny, "c0")
-  C0 <- check.prior(C0, nmeas, tiny, "C0")
+  A0 <- check.prior(A0, nvar, tiny, "A0")
+  B0 <- check.prior(B0, nvar, tiny, "B0")
+  c0 <- check.prior(c0, nvar, tiny, "c0")
+  C0 <- check.prior(C0, nvar, tiny, "C0")
   S0 <- check.prior(S0, Kmax, tiny, "S0")
   nu0 <- check.prior(nu0, 1, Kmax, "nu0")
   xi0 <- check.prior(xi0, 1, tiny, "xi0")
@@ -537,18 +536,18 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
 
   ### idiosyncratic variances
   if (missing(sigma.start)) {
-    sigma.start <- 1/rgamma(nmeas, shape = c0, rate = C0)
+    sigma.start <- 1/rgamma(nvar, shape = c0, rate = C0)
   } else {
-    assertNumeric(sigma.start, len = nmeas, lower = tiny, any.missing = FALSE,
+    assertNumeric(sigma.start, len = nvar, lower = tiny, any.missing = FALSE,
       add = checkArgs)
   }
   sigma.start[Ycat > 0] <- 1  # fix variance to 1 for binary variables
 
   ### factor loadings
   if (missing(alpha.start)) {
-    alpha.start <- rnorm(nmeas, mean = 0, sd = sqrt(A0))
+    alpha.start <- rnorm(nvar, mean = 0, sd = sqrt(A0))
   } else {
-    assertNumeric(alpha.start, len = nmeas, any.missing = FALSE,
+    assertNumeric(alpha.start, len = nvar, any.missing = FALSE,
                   add = checkArgs)
   }
 
@@ -562,7 +561,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   }
   assertNumeric(beta.start, len = nbeta, any.missing = FALSE, add = checkArgs)
   # prepare matrix to be passed to Fortran subroutine
-  beta.start.1 <- matrix(-99999, nX, nmeas)
+  beta.start.1 <- matrix(-99999, nX, nvar)
   if (length(beta.start) == nbeta) {
     beta.start.1[t(YXloc)] <- beta.start
     beta.start.1 <- t(beta.start.1)
@@ -587,13 +586,13 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
 
   ### indicators - default: maximum number of factors, random allocation
   if (missing(dedic.start)) {
-    dedic.start <- rep(0, nmeas)
+    dedic.start <- rep(0, nvar)
     ind <- matrix(sample(Nid * Kmax), ncol = Kmax)
     for (k in 1:Kmax) dedic.start[ind[, k]] <- k
-    dedic.start[dedic.start == 0] <- sample(Kmax, nmeas - Nid * Kmax,
+    dedic.start[dedic.start == 0] <- sample(Kmax, nvar - Nid * Kmax,
                                             replace = TRUE)
   }
-  assertIntegerish(dedic.start, len = nmeas, lower = 0, upper = Kmax,
+  assertIntegerish(dedic.start, len = nvar, lower = 0, upper = Kmax,
                    any.missing = FALSE, add = checkArgs)
   # check identification constraint
   if (any(table(dedic.start[dedic.start != 0]) < Nid)) {
@@ -631,7 +630,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   ## MCMC sampling
 
   # total number of model parameters
-  npar <- c(nmeas, nmeas, Kmax*(Kmax - 1)/2, nbeta)
+  npar <- c(nvar, nvar, Kmax*(Kmax - 1)/2, nbeta)
   npar.all <- sum(npar)
 
   # seed for RNG in Fortran subroutine
@@ -639,8 +638,8 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
 
   # call Fortran subroutine
   if (verbose) cat("starting MCMC sampling...\n")
-  mcmc <- .Fortran("befa",
-                   as.integer(nmeas),
+  mcmc <- .Fortran(F_befa,
+                   as.integer(nvar),
                    as.integer(nobs),
                    as.integer(Kmax),
                    as.integer(Nid),
@@ -669,9 +668,8 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
                    as.logical(verbose),
                    as.integer(npar.all),
                    MCMCdraws = double(iter * npar.all),
-                   MCMCdedic = integer(iter * nmeas),
-                   MHacc = logical(iter),
-                   PACKAGE = "BayesFM")
+                   MCMCdedic = integer(iter * nvar),
+                   MHacc = logical(iter))
   if (verbose) cat("done with sampling!\n")
 
 
@@ -697,7 +695,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
   if (nbeta > 0) {
     names(par.mcmc)[4] <- "beta"
     beta.lab <- c()
-    for (i in 1:nmeas) {
+    for (i in 1:nvar) {
       if (!any(YXloc[i, ])) next
       beta.lab <- c(beta.lab, paste(Ylab[i], Xlab[YXloc[i, ]], sep = ":"))
     }
@@ -707,7 +705,7 @@ befa <- function(model, data, burnin = 1000, iter = 10000, Nid = 3, Kmax,
 
   # indicators
   dedic.mcmc <- as.integer(mcmc$MCMCdedic)
-  dedic.mcmc <- matrix(dedic.mcmc, nrow = iter, ncol = nmeas)
+  dedic.mcmc <- matrix(dedic.mcmc, nrow = iter, ncol = nvar)
   colnames(dedic.mcmc) <- paste0("dedic:", Ylab)
   rownames(dedic.mcmc) <- iter.lab
 

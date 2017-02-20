@@ -59,7 +59,7 @@ post.column.switch <- function(mcmc)
   }
 
   Kmax   <- attr(mcmc, "Kmax")
-  nmeas  <- ncol(mcmc$dedic)
+  nvar   <- ncol(mcmc$dedic)
   iter   <- nrow(mcmc$dedic)
   R.npar <- Kmax * (Kmax - 1)/2
 

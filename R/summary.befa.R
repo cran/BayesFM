@@ -42,10 +42,12 @@
 #' different latent factors. When the posterior distribution of the factor
 #' loadings is summarized separately for each manifest variable
 #' (\code{what = 'maxp'} or \code{what = 'all'}), the function provides the
-#' latent factors each manifest variable is allocated to (\code{dedic}), and the
-#' corresponding posterior probability (\code{prob}).
-#' Low probability cases can be discarded by setting \code{min.prob}
-#' appropriately (default is 0.20).
+#' latent factor each manifest variable is allocated to (\code{dedic}), and the
+#' corresponding posterior probability (\code{prob}). If \code{dedic = 0}, then
+#' \code{prob} corresponds to the posterior probability that the manifest
+#' variable is discarded. Discarded variables are listed last if
+#' \code{byfac = TRUE}. Low probability cases can be discarded by setting
+#' \code{min.prob} appropriately (default is 0.20).
 #'
 #' Idiosyncratic variances, factor correlation matrix and regression
 #' coefficients (if any) are summarized across all MCMC iterations if
@@ -220,6 +222,15 @@ summary.befa <- function(object, ...)
     return(res)
   }
 
+  ### function sorting manifest variables according to the factors they load on
+  ### (variables loading on no factors are listed last)
+  sort.byfac <- function(a) {
+    a[a[, 'dedic'] == 0, 'dedic'] <- NA             # make 0 -> NA
+    a <- a[order(a[, 'dedic'], na.last = TRUE), ]   # sort, putting NAs last
+    a[is.na(a[, 'dedic']), 'dedic'] <- 0            # make NA -> 0
+    return(a)
+  }
+
   ### highest posterior probability models
   if (what == 'hppm') {
 
@@ -256,7 +267,7 @@ summary.befa <- function(object, ...)
 
       a <- apply(alpha[hppm.id,], 2, summarize.mcmc)
       a <- cbind(dedic = hppm.dedic[,i], t(a))
-      if (byfac) a <- a[order(a[, 'dedic']),]
+      if (byfac) a <- sort.byfac(a)
       rownames(a) <- colnames(alpha)
 
       lab <- paste0('m', i)
@@ -309,7 +320,7 @@ summary.befa <- function(object, ...)
       rownames(a) <- names(alpha)
 
     }
-    if (byfac) a <- a[order(a[, 'dedic']),]
+    if (byfac) a <- sort.byfac(a)
     output$alpha <- a
 
     # summarize posterior results for remaining parameters

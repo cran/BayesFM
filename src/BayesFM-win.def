@@ -1,0 +1,3 @@
+LIBRARY BayesFM.dll
+EXPORTS
+ R_init_BayesFM

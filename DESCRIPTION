@@ -1,7 +1,7 @@
 Package: BayesFM
 Title: Bayesian Inference for Factor Modeling
 Type: Package
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: person("Rémi", "Piatek", email = "remi.piatek@econ.ku.dk",
                   role = c("aut", "cre"))
 Author: Rémi Piatek [aut, cre]
@@ -16,11 +16,11 @@ Description: Collection of procedures to perform Bayesian analysis on a variety
 Depends: R (>= 3.0.0)
 Imports: checkmate (>= 1.8.0), coda, ggplot2 (>= 2.1.0), gridExtra,
         plyr (>= 1.8.0)
-SystemRequirements: gfortran (>= 4.8.4)
+SystemRequirements: gfortran (>= 4.6.3)
 License: GPL-3
 NeedsCompilation: yes
 Encoding: UTF-8
 RoxygenNote: 5.0.1
-Packaged: 2017-02-06 16:06:51 UTC; remek
+Packaged: 2017-02-20 08:46:02 UTC; remek
 Repository: CRAN
-Date/Publication: 2017-02-06 17:42:36
+Date/Publication: 2017-02-20 11:19:55

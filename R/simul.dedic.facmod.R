@@ -111,7 +111,7 @@
 #'
 #' @export simul.dedic.facmod
 #' @import checkmate
-#' @importFrom stats rWishart rgamma rnorm runif cov2cor
+#' @importFrom stats rWishart rnorm runif cov2cor
 
 simul.dedic.facmod <- function(N, dedic, alpha, sigma, R, R.corr = TRUE,
                                max.corr = 0.85, R.max.trial = 1000)
@@ -121,32 +121,32 @@ simul.dedic.facmod <- function(N, dedic, alpha, sigma, R, R.corr = TRUE,
   assertInt(N, lower = 1)
   assertIntegerish(dedic, lower = 0, any.missing = FALSE, min.len = 3)
   dedic <- relabel.dedic(dedic)
-  nmeas <- length(dedic)
-  nfac <- max(dedic)
+  nvar  <- length(dedic)
+  nfac  <- max(dedic)
 
   # factor loading matrix
   if (missing(alpha)) {
-    alpha <- rep(NA, nmeas)
+    alpha <- rep(NA, nvar)
   }
-  assertNumeric(alpha, finite = TRUE, len = nmeas)
+  assertNumeric(alpha, finite = TRUE, len = nvar)
   nna <- sum(is.na(alpha))
   if (nna > 0) {
     alpha[is.na(alpha)] <- sample(c(-1, 1), nna, replace = TRUE) *
                              sqrt(runif(nna, min = 0.04, max = 0.64))
   }
-  alpha.mat <- matrix(0, nmeas, nfac)
-  for (i in 1:nmeas) {
+  alpha.mat <- matrix(0, nvar, nfac)
+  for (i in 1:nvar) {
     if (dedic[i] > 0)
       alpha.mat[i, dedic[i]] <- alpha[i]
   }
 
   # error terms
-  if (missing(sigma)) sigma <- rep(NA, nmeas)
-  assertNumeric(sigma, lower = 0.001, finite = TRUE, len = nmeas)
+  if (missing(sigma)) sigma <- rep(NA, nvar)
+  assertNumeric(sigma, lower = 0.001, finite = TRUE, len = nvar)
   nna <- sum(is.na(sigma))
   if (nna > 0) sigma[is.na(sigma)] <- runif(nna, min = 0.2, max = 0.8)
   sigma[dedic == 0] <- 1
-  eps <- matrix(rnorm(N * nmeas), N, nmeas) %*% diag(sqrt(sigma))
+  eps <- matrix(rnorm(N * nvar), N, nvar) %*% diag(sqrt(sigma))
 
   # latent factors
   assertLogical(R.corr, len = 1, any.missing = FALSE)
@@ -174,13 +174,13 @@ simul.dedic.facmod <- function(N, dedic, alpha, sigma, R, R.corr = TRUE,
 
   # manifest variables
   Y <- theta %*% t(alpha.mat) + eps
-  colnames(Y) <- paste0("Y", 1:nmeas)
+  colnames(Y) <- paste0("Y", 1:nvar)
   rownames(Y) <- 1:N
 
   # label parameters
-  names(dedic) <- paste0("Y", 1:nmeas)
-  names(alpha) <- paste0("alpha:", 1:nmeas)
-  names(sigma) <- paste0("sigma:", 1:nmeas)
+  names(dedic) <- paste0("Y", 1:nvar)
+  names(alpha) <- paste0("alpha:", 1:nvar)
+  names(sigma) <- paste0("sigma:", 1:nvar)
   rownames(R)  <- colnames(R) <- paste0("R:", 1:nfac)
 
   # return simulated data

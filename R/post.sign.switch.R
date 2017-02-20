@@ -83,13 +83,13 @@ post.sign.switch <- function(mcmc, benchmark = NULL, benchmark.threshold = 0.5)
   assertNumber(benchmark.threshold, lower = 0, upper = 1)
 
   Kmax   <- attr(mcmc, "Kmax")
-  nmeas  <- ncol(mcmc$dedic)
+  nvar   <- ncol(mcmc$dedic)
   iter   <- nrow(mcmc$dedic)
   R.npar <- Kmax * (Kmax - 1)/2
 
   # factor loadings used as benchmarks
   if (is.null(benchmark)) {
-    alpha.post.prob <- matrix(0, Kmax, nmeas)
+    alpha.post.prob <- matrix(0, Kmax, nvar)
     for (k in 1:Kmax) {
       alpha.post.prob[k, ] <- colMeans(mcmc$dedic == k)
     }
@@ -100,7 +100,7 @@ post.sign.switch <- function(mcmc, benchmark = NULL, benchmark.threshold = 0.5)
       }
     }
   } else {
-    assertIntegerish(benchmark, lower = 0, upper = nmeas, any.missing = FALSE,
+    assertIntegerish(benchmark, lower = 0, upper = nvar, any.missing = FALSE,
                      len = Kmax)
   }
 
@@ -114,8 +114,8 @@ post.sign.switch <- function(mcmc, benchmark = NULL, benchmark.threshold = 0.5)
     dedic <- mcmc$dedic[i, ]
     switch <- sign(mcmc$alpha[i, benchmark])
     switch[is.na(switch)] <- 1  # no sign switch for factors with no benchmark
-    switch.meas <- rep(0, nmeas)
-    for (j in 1:nmeas) {
+    switch.meas <- rep(0, nvar)
+    for (j in 1:nvar) {
       if (dedic[j] == 0) next
       switch.meas[j] <- switch[dedic[j]]
     }

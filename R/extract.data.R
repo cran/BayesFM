@@ -1,4 +1,4 @@
-#' @importFrom stats complete.cases cor
+#' @importFrom stats complete.cases cor terms
 
 extract.data <- function(model, data)
 {

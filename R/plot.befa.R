@@ -36,9 +36,9 @@
 #' plot(mcmc, what = 'hppm')
 #'
 #' @export
-#' @importFrom ggplot2 ggplot aes_string theme labs element_text guides unit
-#' @importFrom ggplot2 ggplot geom_line geom_tile geom_text geom_rug geom_bar
-#' @importFrom ggplot2 scale_fill_gradient2 guide_colorbar
+#' @importFrom ggplot2 ggplot aes_string theme labs element_text
+#' @importFrom ggplot2 geom_line geom_tile geom_text geom_rug geom_bar
+#' @importFrom ggplot2 scale_fill_gradient2 guide_colorbar guides unit
 
 plot.befa <- function(x, ...)
 {

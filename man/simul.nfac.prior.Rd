@@ -4,10 +4,10 @@
 \alias{simul.nfac.prior}
 \title{Simulate prior distribution of number of latent factors}
 \usage{
-simul.nfac.prior(nmeas, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
+simul.nfac.prior(nvar, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
 }
 \arguments{
-\item{nmeas}{Number of manifest variables.}
+\item{nvar}{Number of manifest variables.}
 
 \item{Kmax}{Maximum number of latent factors.}
 
@@ -45,7 +45,7 @@ values and compare the results.
 
 An accept/reject sampling scheme is used: a vector of probabilities is drawn
 from a Dirichlet distribution with concentration parameter \code{kappa}, and
-the \code{nmeas} manifest variables are randomly allocated to the \code{Kmax}
+the \code{nvar} manifest variables are randomly allocated to the \code{Kmax}
 latent factors. If each latent factor has at least \code{Nid} dedicated
 variables or no variables at all, the identification requirement is fulfilled
 and the draw is accepted. The number of factors loaded by at least \code{Nid}
@@ -60,7 +60,7 @@ being included into the model.
 \examples{
 # replicate first row of table 2 in CFSHP (p.44)
 # note: use larger number of replications nrep to improve accuracy
-prior.nfac <- simul.nfac.prior(nmeas = 15, Kmax = 5, kappa = c(.3, .7, 1))
+prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1))
 summary(prior.nfac)
 plot(prior.nfac)
 

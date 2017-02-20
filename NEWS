@@ -1,3 +1,9 @@
+Changes in version 0.1.2
+  - Patched "configure.ac" file to solve compilation problems on some platforms.
+  - Fortran native routines now registered and symbol search disabled.
+  - README file added to provide information about installation requirements.
+  - Added empty "configure.win" file for Windows users.
+
 Changes in version 0.1.1
   - Added simul.R.prior() and simul.nfac.prior() functions to simulate the prior
     distributions of the number of latent factors, and of the correlation matrix

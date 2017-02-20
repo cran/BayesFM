@@ -8,7 +8,7 @@
 #' (minimum number of manifest variables dedicated to each factor).
 #'
 #' @inheritParams befa
-#' @param nmeas Number of manifest variables.
+#' @param nvar Number of manifest variables.
 #' @param Kmax Maximum number of latent factors.
 #' @param kappa Concentration parameter of the Dirichlet prior distribution on
 #'        the indicators.
@@ -23,7 +23,7 @@
 #'
 #' An accept/reject sampling scheme is used: a vector of probabilities is drawn
 #' from a Dirichlet distribution with concentration parameter \code{kappa}, and
-#' the \code{nmeas} manifest variables are randomly allocated to the \code{Kmax}
+#' the \code{nvar} manifest variables are randomly allocated to the \code{Kmax}
 #' latent factors. If each latent factor has at least \code{Nid} dedicated
 #' variables or no variables at all, the identification requirement is fulfilled
 #' and the draw is accepted. The number of factors loaded by at least \code{Nid}
@@ -52,22 +52,22 @@
 #' @examples
 #' # replicate first row of table 2 in CFSHP (p.44)
 #' # note: use larger number of replications nrep to improve accuracy
-#' prior.nfac <- simul.nfac.prior(nmeas = 15, Kmax = 5, kappa = c(.3, .7, 1))
+#' prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1))
 #' summary(prior.nfac)
 #' plot(prior.nfac)
 #'
 #' @export simul.nfac.prior
 #' @import checkmate
-#' @useDynLib BayesFM
+#' @useDynLib BayesFM, .registration = TRUE, .fixes = "F_"
 
-simul.nfac.prior <- function(nmeas, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
+simul.nfac.prior <- function(nvar, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
 {
 
   # sanity checks
   checkArgs <- makeAssertCollection()
-  assertInt(nmeas, lower = 1, add = checkArgs)
-  assertInt(Kmax,  lower = 1, upper = nmeas, add = checkArgs)
-  assertInt(Nid,   lower = 1, upper = floor(nmeas/Kmax), add = checkArgs)
+  assertInt(nvar, lower = 1, add = checkArgs)
+  assertInt(Kmax,  lower = 1, upper = nvar, add = checkArgs)
+  assertInt(Nid,   lower = 1, upper = floor(nvar/Kmax), add = checkArgs)
   assertNumeric(kappa, lower = 10^-7, finite = TRUE, any.missing = FALSE,
                 min.len = 1, unique = TRUE, add = checkArgs)
   assertCount(nrep, positive = TRUE, add = checkArgs)
@@ -77,8 +77,8 @@ simul.nfac.prior <- function(nmeas, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
   for (kap in kappa) {
 
     seed <- round(runif(1) * 10^9)
-    sim  <- .Fortran('simul_nfac_prior',
-                     as.integer (nmeas),
+    sim  <- .Fortran(F_simnfacprior,
+                     as.integer (nvar),
                      as.integer (Kmax),
                      as.integer (Nid),
                      as.double  (rep(kap, Kmax)),
@@ -95,7 +95,7 @@ simul.nfac.prior <- function(nmeas, Kmax, Nid = 3, kappa = 1/Kmax, nrep = 10^6)
   }
 
   attr(out, 'call')  <- match.call()
-  attr(out, 'nmeas') <- nmeas
+  attr(out, 'nvar')  <- nvar
   attr(out, 'Kmax')  <- Kmax
   attr(out, 'Nid')   <- Nid
   attr(out, 'kappa') <- kappa

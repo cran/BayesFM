@@ -1,0 +1,45 @@
+#include <R.h>
+#include <Rinternals.h>
+
+void F77_NAME(befa)(
+        SEXP *nmeas,
+        SEXP *nobs,
+        SEXP *kmax,
+        SEXP *nid,
+        SEXP *Yobs,
+        SEXP *Ycat,
+        SEXP *Ymiss,
+        SEXP *nX,
+        SEXP *Xobs,
+        SEXP *Xloc,
+        SEXP *iter,
+        SEXP *burnin,
+        SEXP *search_delay,
+        SEXP *Rmat_delay,
+        SEXP *step_rnd,
+        SEXP *step_lambda,
+        SEXP *seed,
+        SEXP *prior_loadprec,
+        SEXP *prior_beta,
+        SEXP *prior_dedic,
+        SEXP *prior_facdist,
+        SEXP *start_loadprec,
+        SEXP *start_beta,
+        SEXP *start_dedic,
+        SEXP *start_factor,
+        SEXP *start_facdist,
+        SEXP *verbose,
+        SEXP *npar,
+        SEXP *MCMCdraws,
+        SEXP *MCMCdedic,
+        SEXP *MHacc);
+
+void F77_NAME(simnfacprior)(
+        SEXP *nmeas,
+        SEXP *Kmax,
+        SEXP *Nid,
+        SEXP *kappa,
+        SEXP *nrep,
+        SEXP *seed,
+        SEXP *nfac,
+        SEXP *restrid);
