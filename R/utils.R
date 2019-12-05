@@ -18,7 +18,7 @@ is.pos.semidefinite.matrix <- function(x) {
 ### check if matrix can be inverted
 
 is.invertible.matrix <- function(x) {
-  return(class(try(solve(x), silent = TRUE)) == "matrix")
+  return(class(try(solve(x), silent = TRUE))[1L] == "matrix")
 }
 
 

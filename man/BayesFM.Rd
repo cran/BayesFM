@@ -3,7 +3,6 @@
 \docType{package}
 \name{BayesFM}
 \alias{BayesFM}
-\alias{BayesFM-package}
 \title{BayesFM: Package for Bayesian Factor Modeling}
 \description{
 The long-term goal of this package is to provide a collection of procedures
@@ -23,12 +22,11 @@ This package is under development. You are very welcome to send me any
 comments or suggestions for improvements, and to share with me any problems
 you may encounter with the use of this package.
 }
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
-}
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},
 183(1), pages 31-57, \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

@@ -124,7 +124,7 @@ if this is not the case.
 set.seed(6)
 
 # generate fake data with 15 manifest variables and 3 factors
-Y <- simul.dedic.facmod(N = 200, dedic = rep(1:3, each = 5))
+Y <- simul.dedic.facmod(N = 100, dedic = rep(1:3, each = 5))
 
 # run MCMC sampler and post process output
 # notice: 1000 MCMC iterations for illustration purposes only,
@@ -146,11 +146,21 @@ print(hppm.sum, digits = 6)
 alpha.mean <- hppm.sum$alpha$m1$mean
 print(alpha.mean)
 
+\dontshow{
+summary(mcmc, what = 'maxp', byfac = TRUE)
+summary(mcmc, what = 'all')
+summary(mcmc, what = 'all', byfac = TRUE)
+summary(mcmc, what = 'all', min.prob = 0)
+summary(mcmc, what = 'all', min.prob = 0, byfac = TRUE)
+summary(mcmc, what = 'hppm', byfac = TRUE)
+summary(mcmc, what = 'hppm', min.prob = 0)
+summary(mcmc, what = 'hppm', min.prob = 0, byfac = TRUE)
 }
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+
 }
 \seealso{
 \code{\link{plot.befa}} to plot posterior results.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

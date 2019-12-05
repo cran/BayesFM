@@ -52,7 +52,8 @@
 #' @examples
 #' # replicate first row of table 2 in CFSHP (p.44)
 #' # note: use larger number of replications nrep to improve accuracy
-#' prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1))
+#' prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1), 
+#'                                nrep = 10000)
 #' summary(prior.nfac)
 #' plot(prior.nfac)
 #'

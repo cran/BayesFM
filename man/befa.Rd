@@ -316,7 +316,7 @@ message is issued in that case).
 set.seed(6)
 
 # generate fake data with 15 manifest variables and 3 factors
-N <- 200    # number of observations
+N <- 100    # number of observations
 Y <- simul.dedic.facmod(N, dedic = rep(1:3, each = 5))
 
 # run MCMC sampler
@@ -365,9 +365,6 @@ print(beta.comp, digits = 3)
 }
 
 }
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
-}
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},
@@ -398,4 +395,6 @@ the prior distribution of the indicator matrix, respectively. This is useful
 to perform prior sensitivity analysis and to understand the role of the
 corresponding parameters in the factor search.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

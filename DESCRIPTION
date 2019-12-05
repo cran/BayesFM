@@ -1,11 +1,11 @@
 Package: BayesFM
 Title: Bayesian Inference for Factor Modeling
 Type: Package
-Version: 0.1.2
-Authors@R: person("Rémi", "Piatek", email = "remi.piatek@econ.ku.dk",
-                  role = c("aut", "cre"))
-Author: Rémi Piatek [aut, cre]
-Maintainer: Rémi Piatek <remi.piatek@econ.ku.dk>
+Version: 0.1.3
+Authors@R: person("R\u00e9mi", "Piatek", 
+                  role = c("aut", "cre"),
+                  email = "remi.piatek@econ.ku.dk",
+                  comment = c(ORCID = "0000-0002-3474-1304"))
 Description: Collection of procedures to perform Bayesian analysis on a variety
     of factor models. Currently, it includes: Bayesian Exploratory Factor
     Analysis (befa), an approach to dedicated factor analysis with stochastic
@@ -20,7 +20,9 @@ SystemRequirements: gfortran (>= 4.6.3)
 License: GPL-3
 NeedsCompilation: yes
 Encoding: UTF-8
-RoxygenNote: 5.0.1
-Packaged: 2017-02-20 08:46:02 UTC; remek
+RoxygenNote: 7.0.2
+Packaged: 2019-12-05 14:44:26 UTC; remek
+Author: Rémi Piatek [aut, cre] (<https://orcid.org/0000-0002-3474-1304>)
+Maintainer: Rémi Piatek <remi.piatek@econ.ku.dk>
 Repository: CRAN
-Date/Publication: 2017-02-20 11:19:55
+Date/Publication: 2019-12-05 15:20:02 UTC

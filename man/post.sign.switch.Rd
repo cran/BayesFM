@@ -50,7 +50,7 @@ matrix as benchmarks to perform the sign switch.
 }
 \examples{
 set.seed(6)
-Y <- simul.dedic.facmod(N = 200, dedic = rep(1:3, each = 5))
+Y <- simul.dedic.facmod(N = 100, dedic = rep(1:3, each = 5))
 mcmc <- befa(Y, Kmax = 5, iter = 1000)
 mcmc <- post.column.switch(mcmc)
 
@@ -63,9 +63,6 @@ mcmc1 <- post.sign.switch(mcmc, benchmark = c(1, 6, 11, 12, 13))
 mcmc2 <- post.sign.switch(mcmc)
 
 }
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
-}
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,
 R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
@@ -77,4 +74,6 @@ R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 loading matrix and of the correlation matrix of the latent factors to restore
 identification \emph{a posteriori}.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

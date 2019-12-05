@@ -60,17 +60,17 @@ being included into the model.
 \examples{
 # replicate first row of table 2 in CFSHP (p.44)
 # note: use larger number of replications nrep to improve accuracy
-prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1))
+prior.nfac <- simul.nfac.prior(nvar = 15, Kmax = 5, kappa = c(.3, .7, 1), 
+                               nrep = 10000)
 summary(prior.nfac)
 plot(prior.nfac)
 
-}
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
 }
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},
 183(1), pages 31-57, \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

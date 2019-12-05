@@ -33,13 +33,10 @@ switched accordingly. See section 4.3 of CFSHP (p.42) for more details.
 }
 \examples{
 set.seed(6)
-Y <- simul.dedic.facmod(N = 200, dedic = rep(1:3, each = 5))
+Y <- simul.dedic.facmod(N = 100, dedic = rep(1:3, each = 5))
 mcmc <- befa(Y, Kmax = 5, iter = 1000)
 mcmc <- post.column.switch(mcmc)
 
-}
-\author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
 }
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,
@@ -51,4 +48,6 @@ R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 \code{\link{post.sign.switch}} to restore identification a
 posteriori with respect to the sign switching problem.
 }
-
+\author{
+Rémi Piatek \email{remi.piatek@econ.ku.dk}
+}

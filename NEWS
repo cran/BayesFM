@@ -1,3 +1,7 @@
+Changes in version 0.1.3
+  - Fixed error occurring when "class(matrix(...))" returns a vector of length 
+    two.
+
 Changes in version 0.1.2
   - Patched "configure.ac" file to solve compilation problems on some platforms.
   - Fortran native routines now registered and symbol search disabled.

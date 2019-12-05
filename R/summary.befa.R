@@ -121,7 +121,7 @@
 #' set.seed(6)
 #'
 #' # generate fake data with 15 manifest variables and 3 factors
-#' Y <- simul.dedic.facmod(N = 200, dedic = rep(1:3, each = 5))
+#' Y <- simul.dedic.facmod(N = 100, dedic = rep(1:3, each = 5))
 #'
 #' # run MCMC sampler and post process output
 #' # notice: 1000 MCMC iterations for illustration purposes only,
@@ -212,7 +212,7 @@ summary.befa <- function(object, ...)
   summarize.mcmc <- function(z, prob = FALSE) {
     if (length(z) == 1) {
       sd  <- 0
-      hpd <- c(z, z)
+      hpd <- c(NA, NA)
     } else {
       sd  <- sd(z)
       hpd <- coda::HPDinterval(coda::as.mcmc(z), prob = hpd.prob)
@@ -237,8 +237,8 @@ summary.befa <- function(object, ...)
     alpha <- object$alpha
     dedic <- object$dedic
 
-    dedic.tab  <- plyr::count(as.data.frame(dedic))
-    dedic.tab  <- dedic.tab[order(dedic.tab$freq, decreasing = TRUE),]
+    dedic.tab <- plyr::count(as.data.frame(dedic))
+    dedic.tab <- dedic.tab[order(dedic.tab$freq, decreasing = TRUE),]
     if (dedic.tab$freq[1] < iter*min.prob)
       stop('Probability of HPP model lower than min.prob. ',
            'Try to decrease the value of min.prob')
@@ -265,17 +265,20 @@ summary.befa <- function(object, ...)
 
       hppm.id <- apply(t(dedic) == hppm.dedic[,i], 2, all)
 
-      a <- apply(alpha[hppm.id,], 2, summarize.mcmc)
+      a <- apply(alpha[hppm.id, , drop = FALSE], 2, summarize.mcmc)
       a <- cbind(dedic = hppm.dedic[,i], t(a))
       if (byfac) a <- sort.byfac(a)
       rownames(a) <- colnames(alpha)
 
       lab <- paste0('m', i)
       output$alpha[[lab]] <- a
-      output$sigma[[lab]] <- t(apply(object$sigma[hppm.id,], 2, summarize.mcmc))
-      output$R[[lab]]     <- t(apply(object$R[hppm.id,], 2, summarize.mcmc))
+      output$sigma[[lab]] <- t(apply(object$sigma[hppm.id, , drop = FALSE], 2, 
+                                     summarize.mcmc))
+      output$R[[lab]]     <- t(apply(object$R[hppm.id, , drop = FALSE], 2, 
+                                     summarize.mcmc))
       if (!is.null(object$beta))
-        output$beta[[lab]] <- t(apply(object$beta[hppm.id,], 2, summarize.mcmc))
+        output$beta[[lab]] <- t(apply(object$beta[hppm.id, , drop = FALSE], 2, 
+                                      summarize.mcmc))
 
     }
 
@@ -284,9 +287,11 @@ summary.befa <- function(object, ...)
 
     # factor loadings: insert NA values when not dedicated to any factor
     for (i in 1:length(output$alpha))
-      for (j in 1:nrow(output$alpha[[i]]))
+      for (j in 1:nrow(output$alpha[[i]])) {
+        cat(i, j, "\n")
         if (output$alpha[[i]][j, 'dedic'] == 0)
           output$alpha[[i]][j, c('mean', 'sd', 'hpd.lo', 'hpd.up')] <- NA
+      }
 
   ### general case (not HPP models)
   } else {

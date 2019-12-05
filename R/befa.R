@@ -333,7 +333,7 @@
 #' set.seed(6)
 #'
 #' # generate fake data with 15 manifest variables and 3 factors
-#' N <- 200    # number of observations
+#' N <- 100    # number of observations
 #' Y <- simul.dedic.facmod(N, dedic = rep(1:3, each = 5))
 #'
 #' # run MCMC sampler

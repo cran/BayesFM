@@ -32,10 +32,10 @@
 #' 183(1), pages 31-57, \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
 #'
 #' @examples
-#' # reproduce figure 1 in CFSHP (p.38)
+#' # partial reproduction of figure 1 in CFSHP (p.38)
 #' # note: use larger number of replications nrep to increase smoothness
-#' Kmax <- 20
-#' Rsim <- simul.R.prior(Kmax, nu0 = Kmax + c(1, 2, 5, 10), S0 = .5, nrep = 1e3)
+#' Kmax <- 10
+#' Rsim <- simul.R.prior(Kmax, nu0 = Kmax + c(1, 2, 5), S0 = .5, nrep = 1000)
 #' summary(Rsim)
 #' plot(Rsim)
 #'
@@ -44,8 +44,7 @@
 #' @importFrom stats rWishart rgamma
 
 simul.R.prior <- function(Kmax, nu0 = Kmax + 1, S0 = 1, HW.prior = TRUE,
-                          nrep = 10^5, verbose = TRUE)
-{
+                          nrep = 10^5, verbose = TRUE) {
 
   # sanity checks
   checkArgs <- makeAssertCollection()
