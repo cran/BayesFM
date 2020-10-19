@@ -15,7 +15,7 @@
 #' comments or suggestions for improvements, and to share with me any problems
 #' you may encounter with the use of this package.
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @references G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 #' ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},

@@ -113,7 +113,7 @@
 #' Summary results are returned as lists of data frames for HPP models, where
 #' the elements of the list are labeled as '\code{m1}, '\code{m2}', etc.
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @seealso \code{\link{plot.befa}} to plot posterior results.
 #'
@@ -288,7 +288,6 @@ summary.befa <- function(object, ...)
     # factor loadings: insert NA values when not dedicated to any factor
     for (i in 1:length(output$alpha))
       for (j in 1:nrow(output$alpha[[i]])) {
-        cat(i, j, "\n")
         if (output$alpha[[i]][j, 'dedic'] == 0)
           output$alpha[[i]][j, c('mean', 'sd', 'hpd.lo', 'hpd.up')] <- NA
       }

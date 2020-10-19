@@ -25,7 +25,7 @@
 #' dimension (\code{Kmax}, \code{Kmax}, \code{nrep}) that contains the
 #' correlation matrices of the latent factors drawn from the prior.
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @references G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 #' ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},

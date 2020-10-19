@@ -297,7 +297,7 @@
 #' (\code{post.column.switch}) and the sign switching problem
 #' (\code{post.sign.switch}).
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @references G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 #' ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},

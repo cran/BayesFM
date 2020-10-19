@@ -118,5 +118,5 @@ R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }

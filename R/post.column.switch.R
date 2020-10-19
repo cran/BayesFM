@@ -23,7 +23,7 @@
 #' switched appropriately to restore the identification of the factor model with
 #' respect to column switching.
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @references
 #' G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,

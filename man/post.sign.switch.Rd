@@ -75,5 +75,5 @@ loading matrix and of the correlation matrix of the latent factors to restore
 identification \emph{a posteriori}.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }

@@ -71,5 +71,5 @@ plot(mcmc, what = 'hppm')
 \code{\link{summary.befa}} to summarize posterior results.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }

@@ -396,5 +396,5 @@ to perform prior sensitivity analysis and to understand the role of the
 corresponding parameters in the factor search.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }

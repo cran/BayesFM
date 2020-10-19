@@ -88,7 +88,7 @@
 #' The parameters used to generate the data are saved as attributes:
 #' \code{dedic}, \code{alpha}, \code{sigma} and \code{R}.
 #'
-#' @author Rémi Piatek \email{remi.piatek@@econ.ku.dk}
+#' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @references
 #' G. Conti, S. Frühwirth-Schnatter, J.J. Heckman,

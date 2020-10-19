@@ -162,5 +162,5 @@ summary(mcmc, what = 'hppm', min.prob = 0, byfac = TRUE)
 \code{\link{plot.befa}} to plot posterior results.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }

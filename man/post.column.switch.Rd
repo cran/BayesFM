@@ -49,5 +49,5 @@ R. Piatek (2014): ``Bayesian Exploratory Factor Analysis'',
 posteriori with respect to the sign switching problem.
 }
 \author{
-Rémi Piatek \email{remi.piatek@econ.ku.dk}
+Rémi Piatek \email{remi.piatek@gmail.com}
 }
