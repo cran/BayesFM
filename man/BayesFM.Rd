@@ -18,14 +18,14 @@ but determined during MCMC sampling. More approaches will be included in
 future releases of this package.
 }
 \note{
-This package is under development. You are very welcome to send me any
-comments or suggestions for improvements, and to share with me any problems
-you may encounter with the use of this package.
+You are very welcome to send me any comments or suggestions for 
+improvements, and to share with me any problems you may encounter with the 
+use of this package.
 }
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},
-183(1), pages 31-57, \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
+183(1), pages 31-57, \doi{10.1016/j.jeconom.2014.06.008}.
 }
 \author{
 Rémi Piatek \email{remi.piatek@gmail.com}

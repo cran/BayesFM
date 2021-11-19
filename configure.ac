@@ -48,3 +48,5 @@ case "${FC}" in
     ;;
 
 esac
+
+AC_OUTPUT

@@ -368,17 +368,17 @@ print(beta.comp, digits = 3)
 \references{
 G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, R. Piatek (2014):
 ``Bayesian Exploratory Factor Analysis'', \emph{Journal of Econometrics},
-183(1), pages 31-57, \url{http://dx.doi.org/10.1016/j.jeconom.2014.06.008}.
+183(1), pages 31-57, \doi{10.1016/j.jeconom.2014.06.008}.
 
 A. Huang, M.P. Wand (2013):
 ``Simple Marginally Noninformative Prior Distributions for Covariance
 Matrices'', \emph{Bayesian Analysis}, 8(2), pages 439-452,
-\url{http://dx.doi.org/10.1214/13-BA815}.
+\doi{10.1214/13-BA815}.
 
 D.A. van Dyk, X.-L. Meng (2001):
 ``The Art of Data Augmentation'',
 \emph{Journal of Computational and Graphical Statistics}, 10(1), pages 1-50,
-\url{http://dx.doi.org/10.1198/10618600152418584}.
+\doi{10.1198/10618600152418584}.
 }
 \seealso{
 \code{\link{post.column.switch}} and \code{\link{post.sign.switch}}

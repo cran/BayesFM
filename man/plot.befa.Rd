@@ -37,6 +37,10 @@
         0.20)
 }}
 }
+\value{
+No return value, called for side effects (plots the posterior results 
+returned by \code{\link{summary.befa}}).
+}
 \description{
 This function makes different plots that are useful to assess the posterior
 results: a trace plot of the number of latent factors (also showing

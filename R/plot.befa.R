@@ -15,6 +15,9 @@
 #' \code{\link{summary.befa}}. It therefore accepts the same optional arguments
 #' as this function.
 #'
+#' @return No return value, called for side effects (plots the posterior results 
+#' returned by \code{\link{summary.befa}}).
+#' 
 #' @author Rémi Piatek \email{remi.piatek@@gmail.com}
 #'
 #' @seealso \code{\link{summary.befa}} to summarize posterior results.

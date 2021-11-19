@@ -1,3 +1,7 @@
+Changes in version 0.1.5
+  - Added missing AC_OUTPUT to configure.ac to remove warning on CRAN.
+  - Minor changes to documentation (now using \doi{} for references).
+
 Changes in version 0.1.4
   - Updated maintainer's email address.
 

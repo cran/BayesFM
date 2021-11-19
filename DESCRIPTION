@@ -1,18 +1,21 @@
 Package: BayesFM
 Title: Bayesian Inference for Factor Modeling
 Type: Package
-Version: 0.1.4
-Authors@R: person("R\u00e9mi", "Piatek", 
-                  role = c("aut", "cre"),
-                  email = "remi.piatek@gmail.com",
-                  comment = c(ORCID = "0000-0002-3474-1304"))
+Version: 0.1.5
+Authors@R: person(
+    given = "Rémi", 
+    family = "Piatek", 
+    role = c("aut", "cre"),
+    email = "remi.piatek@gmail.com",
+    comment = c(ORCID = "0000-0002-3474-1304"))
 Description: Collection of procedures to perform Bayesian analysis on a variety
-    of factor models. Currently, it includes: Bayesian Exploratory Factor
-    Analysis (befa), an approach to dedicated factor analysis with stochastic
-    search on the structure of the factor loading matrix. The number of latent
-    factors, as well as the allocation of the manifest variables to the factors,
-    are not fixed a priori but determined during MCMC sampling.
-    More approaches will be included in future releases of this package.
+    of factor models. Currently, it includes: "Bayesian Exploratory Factor 
+    Analysis" (befa) from G. Conti, S. Frühwirth-Schnatter, J.J. Heckman, 
+    R. Piatek (2014) <doi:10.1016/j.jeconom.2014.06.008>, an approach to 
+    dedicated factor analysis with stochastic search on the structure of the 
+    factor loading matrix. The number of latent factors, as well as the 
+    allocation of the manifest variables to the factors, are not fixed a priori 
+    but determined during MCMC sampling.
 Depends: R (>= 3.0.0)
 Imports: checkmate (>= 1.8.0), coda, ggplot2 (>= 2.1.0), gridExtra,
         plyr (>= 1.8.0)
@@ -20,9 +23,9 @@ SystemRequirements: gfortran (>= 4.6.3)
 License: GPL-3
 NeedsCompilation: yes
 Encoding: UTF-8
-RoxygenNote: 7.0.2
-Packaged: 2020-10-17 14:30:31 UTC; piatek
+RoxygenNote: 7.1.2
+Packaged: 2021-11-19 13:31:36 UTC; piatek
 Author: Rémi Piatek [aut, cre] (<https://orcid.org/0000-0002-3474-1304>)
 Maintainer: Rémi Piatek <remi.piatek@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-10-19 23:10:19 UTC
+Date/Publication: 2021-11-19 14:50:12 UTC
