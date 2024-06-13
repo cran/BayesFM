@@ -8,9 +8,6 @@ module mcmc_progress_class
     integer      :: i
     integer      :: steps(20)
     character(6) :: perct(20)
-  contains
-    procedure, public :: init => init_mcmc_progress
-    procedure, public :: show => show_mcmc_progress
   end type mcmc_progress
 
 
@@ -21,10 +18,10 @@ contains
 
   subroutine init_mcmc_progress(this, burnin, iter, verbose)
     implicit none
-    class(mcmc_progress) :: this
-    integer, intent(in)  :: iter, burnin
-    logical, intent(in)  :: verbose
-    integer              :: i
+    type(mcmc_progress), intent(out) :: this
+    integer,             intent(in)  :: iter, burnin
+    logical,             intent(in)  :: verbose
+    integer                          :: i
 
     this%verbose = verbose
     this%burnin = burnin
@@ -45,8 +42,8 @@ contains
 
   subroutine show_mcmc_progress(this, rep)
     implicit none
-    class(mcmc_progress) :: this
-    integer, intent(in)  :: rep
+    type(mcmc_progress), intent(inout) :: this
+    integer,             intent(in)    :: rep
 
     if(modulo(rep, 100) == 0) call rchkusr()
 

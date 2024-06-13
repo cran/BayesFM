@@ -53,19 +53,19 @@ subroutine befa &
   logical,  intent(out) :: MHacc(burnin+1:iter)
 
   !----- model ingredients
-  type(measurement)                           :: Ylat(nmeas)
-  type(covariates)                            :: Xcov(nmeas)
-  type(loading_idioprec)                      :: alpha_prec(nmeas)
-  type(indic_dedic)                           :: dedic
-  type(factor_normal_block)                   :: factors
-  class(covmat_block_invwishart), allocatable :: facdist
-  type(workpar)                               :: mda
+  type(measurement)             :: Ylat(nmeas)
+  type(covariates)              :: Xcov(nmeas)
+  type(loading_idioprec)        :: alpha_prec(nmeas)
+  type(indic_dedic)             :: dedic
+  type(factor_normal_block)     :: factors
+  type(covmat_block_invwishart) :: facdist
+  type(workpar)                 :: mda
 
   logical :: norestr
   integer :: i, ii, j, k, step
 
   type(mcmc_progress) :: mcmc_prog
-  call mcmc_prog%init(burnin, iter, verbose)
+  call init_mcmc_progress(mcmc_prog, burnin, iter, verbose)
 
 
   !=============================================================================
@@ -76,35 +76,35 @@ subroutine befa &
   do j = 1, nmeas
 
     ! latent variables underlying measurements
-    select case (Ycat(j))
-      case(0); allocate(measurement_cont :: Ylat(j)%p)
-      case(2); allocate(measurement_bin  :: Ylat(j)%p)
-    end select
-    call Ylat(j)%p%init(nobs, Yobs(:,j), Ymiss(:,j))
+    call init_measurement(Ylat(j), nobs, Ycat(j) > 0, Yobs(:,j), Ymiss(:,j))
 
     ! slope parameters for covariates
-    call Xcov(j)%init(nobs, nX, Xobs, prior_beta(j), start_beta(j,:), Xloc(j,:))
+    call init_covariates(Xcov(j), nobs, nX, Xobs, prior_beta(j), &
+                         start_beta(j,:), Xloc(j,:))
 
     ! factor loadings and idiosyncratic precisions
-    call alpha_prec(j)%init(nobs, Ycat(j)==0, prior_loadprec(j,:), &
-                            start_loadprec(j,:))
+    call init_loading_idioprec(alpha_prec(j), nobs, Ycat(j) > 0, &
+                               prior_loadprec(j,:), start_loadprec(j,:))
 
   end do
 
   ! indicators
-  call dedic%init(nobs, nmeas, kmax, Ycat, prior_dedic, start_dedic)
+  call init_indic_dedic(dedic, nobs, nmeas, kmax, Ycat, prior_dedic, &
+                        start_dedic)
   where(dedic%group == 0) alpha_prec%alpha = 0._r8
 
   ! latent factors
-  call factors%init(nobs, nmeas, kmax, start_factor)
-  select case (int(prior_facdist(0)))
-    case(0); allocate(covmat_block_invwishart :: facdist)
-    case(1); allocate(covmat_block_HuangWand  :: facdist)
-  end select
-  call facdist%init(nobs, kmax, prior_facdist(1:), start_facdist)
+  call init_factor_normal_block(factors, nobs, nmeas, kmax, start_factor)
+  if(int(prior_facdist(0)) == 0) then
+    call init_covmat_block_invwishart(facdist, nobs, kmax, .false., &
+                                      prior_facdist(1:), start_facdist)
+  else
+    call init_covmat_block_invwishart(facdist, nobs, kmax, .true., &
+                                      prior_facdist(1:), start_facdist)
+  end if
 
   ! working parameters for MDA
-  call mda%init(kmax, nmeas, nobs)
+  call init_workpar(mda, kmax, nmeas, nobs)
 
   norestr = nid==1
   step = int(step_lambda)
@@ -157,12 +157,12 @@ subroutine befa &
       MCMCdedic(i,:) = dedic%group
       MCMCdraws(i,:) = [ alpha_prec%alpha, &
                          alpha_prec%var, &
-                         facdist%get(), &
+                         get_covmat_block_invwishart(facdist), &
                          get_all_covariates(Xcov) ]
     end if
 
     ! show MCMC progress
-    call mcmc_prog%show(i)
+    call show_mcmc_progress(mcmc_prog, i)
 
   end do
 
@@ -177,11 +177,13 @@ contains
     logical, intent(in) :: search, sample_Rmat
     real(r8)            :: Yaux(nobs, nmeas)
 
-    forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
+    do j = 1, nmeas
+      Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+    end do
 
     ! sample indicators
     if(search) then
-      call dedic%update(Yaux, factors%theta)
+      call update_indic_dedic(dedic, Yaux, factors%theta)
       where(dedic%group == 0) alpha_prec%alpha = 0._r8
     end if
 
@@ -190,18 +192,18 @@ contains
       k = dedic%group(j)
 
       ! sample factor loading and idiosyncratic precision
-      call alpha_prec(j)%update(Yaux(:,j), k, factors%theta)
+      call update_loading_idioprec(alpha_prec(j), Yaux(:,j), k, factors%theta)
 
       ! sample slope parameters for covariates
-      Yaux(:,j) = Ylat(j)%p%Y
+      Yaux(:,j) = Ylat(j)%Y
       if(k > 0) Yaux(:,j) = Yaux(:,j) - alpha_prec(j)%alpha*factors%theta(:,k)
-      call Xcov(j)%update(Yaux(:,j), alpha_prec(j)%prec)
+      call update_covariates(Xcov(j), Yaux(:,j), alpha_prec(j)%prec)
 
       ! sample latent variable underlying measurement
       if(Ycat(j)>0 .or. any(Ymiss(:,j))) then
         Yaux(:,j) = Xcov(j)%Xbeta
         if(k > 0) Yaux(:,j) = Yaux(:,j) + alpha_prec(j)%alpha*factors%theta(:,k)
-        call Ylat(j)%p%update(Yaux(:,j), alpha_prec(j)%prec)
+        call update_measurement(Ylat(j), Yaux(:,j), alpha_prec(j)%prec)
       end if
 
     end do
@@ -209,27 +211,32 @@ contains
     if(sample_Rmat) then
 
       ! MDA: expand model
-      call mda%expand(dedic%group, alpha_prec%alpha, facdist)
+      call expand_workpar(mda, dedic%group, alpha_prec%alpha, facdist)
 
       ! sample active factors
-      forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
-      call factors%update_acti &
-             (Yaux, alpha_prec%alpha, dedic, alpha_prec%prec, facdist)
+      do j = 1, nmeas
+        Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+      end do
+      call update_factor_normal_block_acti &
+             (factors, Yaux, alpha_prec%alpha, dedic, alpha_prec%prec, facdist)
 
       ! sample factor covariance matrix
-      call facdist%update(factors%theta, dedic)
+      call update_covmat_block_invwishart(facdist, factors%theta, dedic)
 
       ! sample inactive factors
-      call factors%update_inacti(facdist, dedic)
+      call update_factor_normal_block_inacti(factors, facdist, dedic)
 
       ! MDA: transform back to identified model
-      call mda%transfback(dedic%group, alpha_prec%alpha, facdist, factors%theta)
+      call transform_back_workpar(mda, dedic%group, alpha_prec%alpha, facdist, &
+                                  factors%theta)
 
     else
 
-      forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
-      call factors%update &
-             (Yaux, alpha_prec%alpha, dedic%group, alpha_prec%prec, facdist)
+      do j = 1, nmeas
+        Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+      end do
+      call update_factor_normal_block(factors, Yaux, alpha_prec%alpha, &
+                                      dedic%group, alpha_prec%prec, facdist)
 
     end if
 
@@ -246,27 +253,32 @@ contains
     if(sample_Rmat) then
 
       ! MDA: expand model
-      call mda%expand(dedic%group, alpha_prec%alpha, facdist)
+      call expand_workpar(mda, dedic%group, alpha_prec%alpha, facdist)
 
       ! sample active factors
-      forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
-      call factors%update_acti &
-             (Yaux, alpha_prec%alpha, dedic, alpha_prec%prec, facdist)
+      do j = 1, nmeas
+        Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+      end do
+      call update_factor_normal_block_acti &
+             (factors, Yaux, alpha_prec%alpha, dedic, alpha_prec%prec, facdist)
 
       ! sample factor covariance matrix
-      call facdist%update(factors%theta, dedic)
+      call update_covmat_block_invwishart(facdist, factors%theta, dedic)
 
       ! sample inactive factors
-      call factors%update_inacti(facdist, dedic)
+      call update_factor_normal_block_inacti(factors, facdist, dedic)
 
       ! MDA: transform back to identified model
-      call mda%transfback(dedic%group, alpha_prec%alpha, facdist, factors%theta)
+      call transform_back_workpar(mda, dedic%group, alpha_prec%alpha, facdist, &
+                                  factors%theta)
 
     else
 
-      forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
-      call factors%update &
-             (Yaux, alpha_prec%alpha, dedic%group, alpha_prec%prec, facdist)
+      do j = 1, nmeas
+        Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+      end do
+      call update_factor_normal_block(factors, Yaux, alpha_prec%alpha, &
+                                      dedic%group, alpha_prec%prec, facdist)
 
     end if
 
@@ -278,24 +290,27 @@ contains
       if(Ycat(j)>0 .or. any(Ymiss(:,j))) then
         Yaux(:,j) = Xcov(j)%Xbeta
         if(k > 0) Yaux(:,j) = Yaux(:,j) + alpha_prec(j)%alpha*factors%theta(:,k)
-        call Ylat(j)%p%update(Yaux(:,j), alpha_prec(j)%prec)
+        call update_measurement(Ylat(j), Yaux(:,j), alpha_prec(j)%prec)
       end if
 
       ! sample slope parameters for covariates
-      Yaux(:,j) = Ylat(j)%p%Y
+      Yaux(:,j) = Ylat(j)%Y
       if(k > 0) Yaux(:,j) = Yaux(:,j) - alpha_prec(j)%alpha*factors%theta(:,k)
-      call Xcov(j)%update(Yaux(:,j), alpha_prec(j)%prec)
+      call update_covariates(Xcov(j), Yaux(:,j), alpha_prec(j)%prec)
 
     end do
 
     ! sample indicators
-    forall(j = 1:nmeas) Yaux(:,j) = Ylat(j)%p%Y - Xcov(j)%Xbeta
-    call dedic%update(Yaux, factors%theta)
+    do j = 1, nmeas
+      Yaux(:,j) = Ylat(j)%Y - Xcov(j)%Xbeta
+    end do
+    call update_indic_dedic(dedic, Yaux, factors%theta)
     where(dedic%group == 0) alpha_prec%alpha = 0._r8
 
     ! sample factor loading and idiosyncratic precision
     do j = 1, nmeas
-      call alpha_prec(j)%update(Yaux(:,j), dedic%group(j), factors%theta)
+      call update_loading_idioprec(alpha_prec(j), Yaux(:,j), dedic%group(j), &
+                                   factors%theta)
     end do
 
   end subroutine gibbs_sweep_backward
@@ -307,13 +322,13 @@ contains
     implicit none
     integer :: j
 
-    call dedic%backup()
-    call factors%backup()
-    call facdist%backup()
+    call backup_indic_dedic(dedic)
+    call backup_factor_normal_block(factors)
+    call backup_covmat_block_invwishart(facdist)
     do j = 1, nmeas
-      call alpha_prec(j)%backup()
-      call Xcov(j)%backup()
-      call Ylat(j)%p%backup()
+      call backup_loading_idioprec(alpha_prec(j))
+      call backup_covariates(Xcov(j))
+      call backup_measurement(Ylat(j))
     end do
 
   end subroutine backup_draws
@@ -325,13 +340,13 @@ contains
     implicit none
     integer :: j
 
-    call dedic%restore()
-    call factors%restore()
-    call facdist%restore()
+    call restore_indic_dedic(dedic)
+    call restore_factor_normal_block(factors)
+    call restore_covmat_block_invwishart(facdist)
     do j = 1, nmeas
-      call alpha_prec(j)%restore()
-      call Xcov(j)%restore()
-      call Ylat(j)%p%restore()
+      call restore_loading_idioprec(alpha_prec(j))
+      call restore_covariates(Xcov(j))
+      call restore_measurement(Ylat(j))
     end do
 
   end subroutine restore_draws

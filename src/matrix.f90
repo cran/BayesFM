@@ -76,7 +76,13 @@ contains
                                                 Achol(i,1:i-1))) / p(i)
     end do
 
-    forall(i = 1:n, j = 1:n, i < j) Achol(i,j) = 0._r8
+    do i = 1, n
+      do j = 1, n
+        if(i < j) then
+          Achol(i,j) = 0._r8
+        end if
+      end do
+    end do
 
   end function chol
 
@@ -226,10 +232,12 @@ contains
     integer  :: i, j, n
 
     n = size(A,2)
-    forall(i = 1:n, j = 1:n, i <= j)
-      AA(i,j) = dot_product(A(:,i), A(:,j))
-      AA(j,i) = AA(i,j)
-    end forall
+    do j = 1, n  ! i <= j
+      do i = 1, j
+        AA(i,j) = dot_product(A(:,i), A(:,j))
+        AA(j,i) = AA(i,j)
+      end do
+    end do
 
   end function crossprod
 

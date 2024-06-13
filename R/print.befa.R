@@ -2,7 +2,7 @@
 
 print.befa <- function(x, ...)
 {
-  if (class(x) != 'befa')
+  if (!inherits(x, 'befa'))
     stop('object passed to print.befa should be of class befa')
 
   cat('BEFA output - Bayesian Exploratory Factor Analysis\n\n')

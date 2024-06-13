@@ -163,7 +163,7 @@
 summary.befa <- function(object, ...)
 {
 
-  if (class(object) != 'befa')
+  if (!inherits(object, 'befa')) 
     stop('object passed to print.befa should be of class befa')
 
   # extra arguments

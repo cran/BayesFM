@@ -5,9 +5,6 @@ module covariates_class
   use matrix,      only : chol, solvl, solvu
   implicit none
 
-  private
-  public :: covariates
-  public :: get_all_covariates
 
   type :: covariates
     integer               :: nobs
@@ -20,11 +17,6 @@ module covariates_class
     ! back up
     real(r8), allocatable :: beta_bak(:)
     real(r8), allocatable :: Xbeta_bak(:)
-  contains
-    procedure, public :: init    => init_covariates
-    procedure, public :: update  => update_covariates
-    procedure, public :: backup  => backup_covariates
-    procedure, public :: restore => restore_covariates
   end type covariates
 
 
@@ -35,14 +27,14 @@ contains
 
   subroutine init_covariates(this, nobs, npar, X, prior, start, mask)
     implicit none
-    class(covariates)              :: this
-    integer,  intent(in)           :: nobs
-    integer,  intent(in)           :: npar
-    real(r8), intent(in)           :: X(nobs, npar)
-    real(r8), intent(in)           :: prior
-    real(r8), intent(in)           :: start(npar)
-    logical,  intent(in), optional :: mask(npar)
-    integer                        :: i
+    type(covariates), intent(out)          :: this
+    integer,          intent(in)           :: nobs
+    integer,          intent(in)           :: npar
+    real(r8),         intent(in)           :: X(nobs, npar)
+    real(r8),         intent(in)           :: prior
+    real(r8),         intent(in)           :: start(npar)
+    logical,          intent(in), optional :: mask(npar)
+    integer                                :: i
 
     this%nobs = nobs
 
@@ -55,7 +47,7 @@ contains
     allocate(this%Xbeta(nobs))
     this%Xbeta = 0._r8
 
-    if(this%npar == 0) return    ! nothing more to allocate if no covariates
+    if(this%npar == 0) return    ! nothing more to allocate if no this
 
     allocate(this%beta(this%npar))
     allocate(this%X(nobs, this%npar))
@@ -64,9 +56,9 @@ contains
     allocate(this%Xbeta_bak(nobs))
 
     if(present(mask)) then
-      forall(i = 1:nobs)
+      do i = 1, nobs
         this%X(i,:) = pack(X(i,:), mask)
-      end forall
+      end do
       this%beta = pack(start, mask)
     else
       this%X    = X
@@ -87,18 +79,20 @@ contains
 
   subroutine update_covariates(this, Y, prec)
     implicit none
-    class(covariates)                          :: this
-    real(r8), dimension(this%nobs), intent(in) :: Y
-    real(r8),                       intent(in) :: prec
-    real(r8), dimension(this%npar, this%npar)  :: beta_B, beta_L
-    real(r8), dimension(this%npar)             :: beta_m, beta_z, beta_e
-    integer                                    :: i
+    type(covariates),                intent(inout) :: this
+    real(r8), dimension(this%nobs), intent(in)    :: Y
+    real(r8),                        intent(in)    :: prec
+    real(r8), dimension(this%npar, this%npar)    :: beta_B, beta_L
+    real(r8), dimension(this%npar)                :: beta_m, beta_z, beta_e
+    integer                                        :: i
 
     if(this%npar == 0) return
 
     beta_m = prec * matmul(transpose(this%X), Y)
     beta_B = prec * this%XX
-    forall(i = 1:this%npar) beta_B(i,i) = beta_B(i,i) + this%prec0
+    do i = 1, this%npar
+      beta_B(i,i) = beta_B(i,i) + this%prec0
+    end do
     beta_L = chol(beta_B)
     beta_z = solvl(beta_L, beta_m)
 
@@ -115,7 +109,7 @@ contains
 
   subroutine backup_covariates(this)
     implicit none
-    class(covariates) :: this
+    type(covariates), intent(inout) :: this
 
     if(this%npar == 0) return
 
@@ -129,7 +123,7 @@ contains
 
   subroutine restore_covariates(this)
     implicit none
-    class(covariates) :: this
+    type(covariates), intent(inout) :: this
 
     if(this%npar == 0) return
 

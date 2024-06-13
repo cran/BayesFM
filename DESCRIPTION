@@ -1,7 +1,7 @@
 Package: BayesFM
 Title: Bayesian Inference for Factor Modeling
 Type: Package
-Version: 0.1.5
+Version: 0.1.7
 Authors@R: person(
     given = "Rémi", 
     family = "Piatek", 
@@ -23,9 +23,9 @@ SystemRequirements: gfortran (>= 4.6.3)
 License: GPL-3
 NeedsCompilation: yes
 Encoding: UTF-8
-RoxygenNote: 7.1.2
-Packaged: 2021-11-19 13:31:36 UTC; piatek
+RoxygenNote: 7.3.1
+Packaged: 2024-06-09 07:16:09 UTC; remek
 Author: Rémi Piatek [aut, cre] (<https://orcid.org/0000-0002-3474-1304>)
 Maintainer: Rémi Piatek <remi.piatek@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-11-19 14:50:12 UTC
+Date/Publication: 2024-06-13 21:50:16 UTC

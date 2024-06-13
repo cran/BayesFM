@@ -6,9 +6,6 @@ module factor_normal_class
   use matrix,      only : matinv, chol
   implicit none
 
-  private
-  public :: factor_normal
-
 
   type :: factor_normal
     integer               :: nobs
@@ -17,11 +14,6 @@ module factor_normal_class
     real(r8), allocatable :: theta(:,:)
     ! back up
     real(r8), allocatable :: theta_bak(:,:)
-  contains
-    procedure, public :: init    => init_factor_normal
-    procedure, public :: update  => update_factor_normal
-    procedure, public :: backup  => backup_factor_normal
-    procedure, public :: restore => restore_factor_normal
   end type factor_normal
 
 
@@ -32,11 +24,11 @@ contains
 
   subroutine init_factor_normal(this, nobs, nmeas, nfac, start)
     implicit none
-    class(factor_normal) :: this
-    integer,  intent(in) :: nobs
-    integer,  intent(in) :: nmeas
-    integer,  intent(in) :: nfac
-    real(r8), intent(in) :: start(nobs,nfac)
+    type(factor_normal), intent(out) :: this
+    integer,             intent(in)  :: nobs
+    integer,             intent(in)  :: nmeas
+    integer,             intent(in)  :: nfac
+    real(r8),            intent(in)  :: start(nobs,nfac)
 
     this%nobs  = nobs
     this%nmeas = nmeas
@@ -54,12 +46,12 @@ contains
 
   subroutine update_factor_normal(this, Y, alpha, dedic, idioprec, fdist)
     implicit none
-    class(factor_normal)                       :: this
-    real(r8),                       intent(in) :: Y(this%nobs, this%nmeas)
-    real(r8),                       intent(in) :: idioprec(this%nmeas)
-    real(r8),                       intent(in) :: alpha(this%nmeas)
-    integer,                        intent(in) :: dedic(this%nmeas)
-    class(covmat_block_invwishart), intent(in) :: fdist
+    type(factor_normal),           intent(inout) :: this
+    real(r8),                      intent(in)    :: Y(this%nobs, this%nmeas)
+    real(r8),                      intent(in)    :: idioprec(this%nmeas)
+    real(r8),                      intent(in)    :: alpha(this%nmeas)
+    integer,                       intent(in)    :: dedic(this%nmeas)
+    type(covmat_block_invwishart), intent(in)    :: fdist
     real(r8) :: ap2(this%nmeas)
     real(r8) :: ing(this%nmeas, this%nfac)
     real(r8) :: mean_post(this%nobs, this%nfac)
@@ -69,7 +61,9 @@ contains
     ! posterior covariance matrix
     var_post = fdist%prec
     ap2 = idioprec * (alpha**2)
-    forall(k = 1:this%nfac) var_post(k,k) = var_post(k,k) + sum(ap2, dedic==k)
+    do k = 1, this%nfac
+      var_post(k,k) = var_post(k,k) + sum(ap2, dedic==k)
+    end do
     var_post = matinv(var_post)
 
     ! posterior mean
@@ -77,9 +71,9 @@ contains
       if(dedic(j) == 0) then
         ing(j,:) = 0._r8
       else
-        forall(k = 1:this%nfac)
+        do k = 1, this%nfac
           ing(j,k) = var_post(dedic(j), k) * alpha(j) * idioprec(j)
-        end forall
+        end do
       end if
     end do
     mean_post = matmul(Y, ing)
@@ -99,7 +93,7 @@ contains
 
   subroutine backup_factor_normal(this)
     implicit none
-    class(factor_normal) :: this
+    type(factor_normal), intent(inout):: this
 
     this%theta_bak = this%theta
 
@@ -110,7 +104,7 @@ contains
 
   subroutine restore_factor_normal(this)
     implicit none
-    class(factor_normal) :: this
+    type(factor_normal), intent(inout):: this
 
     this%theta = this%theta_bak
 
